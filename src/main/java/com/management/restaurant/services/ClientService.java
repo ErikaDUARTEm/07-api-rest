@@ -34,7 +34,7 @@ public class ClientService {
   public List<Client> listClient(){
     return repository.findAll();
   }
-/*
+
   public Client updateClient(Long id, Client clientActualizado){
     return repository.findById(id).map(client -> {
      client.setName(clientActualizado.getName());
@@ -47,5 +47,5 @@ public class ClientService {
 
   public void deleteClient(Long id){
     repository.deleteById(id);
-  }*/
+  }
 }

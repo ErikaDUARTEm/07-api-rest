@@ -17,5 +17,5 @@ public class ClientRequestDTO {
 
   @NotNull(message = "El numero de teléfono no puede ser nulo")
   private String numberPhone;
-
+  private Boolean isFrecuent;
 }

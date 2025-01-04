@@ -12,6 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -49,10 +50,24 @@ public class ClientController {
       .collect(Collectors.toList());
     return ResponseEntity.ok(response);
   }
- @GetMapping("/{id}")
+  @GetMapping("/{id}")
   public ResponseEntity<ClientResponseDTO> showClientById(@PathVariable Long id){
    return service.showClientById(id)
      .map(client -> ResponseEntity.ok(DtoConverter.convertToResponseDTO(client)))
      .orElse(ResponseEntity.notFound().build());
 }
+  @PutMapping("/{id}")
+  public ResponseEntity<ClientResponseDTO> updateClient(@PathVariable Long id,  @RequestBody @Validated ClientRequestDTO clientRequestDTO){
+    try {
+      Client actualizado = service.updateClient(id, new Client(
+        clientRequestDTO.getName(),
+        clientRequestDTO.getEmail(),
+        clientRequestDTO.getNumberPhone(),
+        clientRequestDTO.getIsFrecuent()
+      ));
+      return ResponseEntity.ok(DtoConverter.convertToResponseDTO(actualizado));
+    } catch (RuntimeException e) {
+      return ResponseEntity.notFound().build();
+    }
+  }
 }

@@ -35,4 +35,11 @@ public class Client {
     this.email = email;
     this.numberPhone = numberPhone;
   }
+
+  public Client(String name, String email, String numberPhone, Boolean isFrecuent) {
+    this.name =name;
+    this.email = email;
+    this.numberPhone = numberPhone;
+    this.isFrecuent = isFrecuent;
+  }
 }
