@@ -7,8 +7,10 @@ import com.management.restaurant.services.ClientService;
 import com.management.restaurant.utils.DtoConverter;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -66,6 +68,15 @@ public class ClientController {
         clientRequestDTO.getIsFrecuent()
       ));
       return ResponseEntity.ok(DtoConverter.convertToResponseDTO(actualizado));
+    } catch (RuntimeException e) {
+      return ResponseEntity.notFound().build();
+    }
+  }
+  @DeleteMapping("/{id}")
+  public ResponseEntity<ClientResponseDTO> deleteClient(@PathVariable Long id){
+    try {
+      service.deleteClient(id);
+      return ResponseEntity.noContent().build();
     } catch (RuntimeException e) {
       return ResponseEntity.notFound().build();
     }
