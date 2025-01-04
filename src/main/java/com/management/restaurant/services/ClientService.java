@@ -27,11 +27,10 @@ public class ClientService {
     System.out.println(cliente.getEmail());
     repository.save(cliente);
   }
-/*
+
   public Optional<Client> showClientById(Long id){
     return repository.findById(id);
   }
-*/
   public List<Client> listClient(){
     return repository.findAll();
   }
