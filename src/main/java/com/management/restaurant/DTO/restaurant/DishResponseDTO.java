@@ -1,5 +1,6 @@
 package com.management.restaurant.DTO.restaurant;
 
+import com.management.restaurant.models.restaurant.MenuRestaurant;
 import lombok.Getter;
 import lombok.Setter;
 

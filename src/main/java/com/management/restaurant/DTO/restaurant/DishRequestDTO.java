@@ -9,6 +9,9 @@ import lombok.Setter;
 public class DishRequestDTO {
   @NotNull
   private String name;
-  @NotNull private Double price;
+  @NotNull
+  private Double price;
   private Boolean popular;
+  @NotNull
+  private Long menuRestaurantId;
 }
