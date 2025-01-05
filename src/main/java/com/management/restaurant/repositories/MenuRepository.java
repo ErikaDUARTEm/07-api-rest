@@ -6,5 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface MenuRepository extends JpaRepository<MenuRestaurant, Long> {
-  Optional<MenuRestaurant> findByRestaurantId(Long restaurantId);
+  Optional<MenuRestaurant> findByRestaurant_Id(Long restaurantId);
+  Optional<MenuRestaurant> findByIdMenuAndRestaurant_Id(Long idMenu, Long restaurantId);
 }

@@ -14,5 +14,6 @@ public class MenuResquetDTO {
   private String description;
   @NotNull
   private Long restaurantId;
+  @NotNull
   private List<DishRequestDTO> dishes;
 }

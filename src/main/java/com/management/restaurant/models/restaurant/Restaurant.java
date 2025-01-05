@@ -1,5 +1,6 @@
 package com.management.restaurant.models.restaurant;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -32,7 +33,7 @@ public class Restaurant {
   private LocalTime openingHours;
   @Column(name = "closing_hours", columnDefinition = "TIME(0)")
   private LocalTime closingHours;
-  @OneToOne(mappedBy = "restaurant", fetch = FetchType.LAZY)
+  @OneToOne(mappedBy = "restaurant", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
   private MenuRestaurant menuRestaurant;
 
   public Restaurant(Long id, String name, String address, String phoneNumber, LocalTime openingHours, LocalTime closingHours, MenuRestaurant menuRestaurant) {

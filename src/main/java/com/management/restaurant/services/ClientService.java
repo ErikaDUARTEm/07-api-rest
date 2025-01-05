@@ -24,7 +24,7 @@ public class ClientService {
     this.repository = repository;
   }
   public Client addClient(Client cliente){
-   return repository.save(cliente);
+    return repository.save(cliente);
   }
 
   public Optional<Client> showClientById(Long id){
@@ -34,14 +34,14 @@ public class ClientService {
     return repository.findAll();
   }
 
-  public Client updateClient(Long id, Client clientActualizado) {
+  public Client updateClient(Long id, Client clientActualizado){
     return repository.findById(id).map(client -> {
-      client.setName(clientActualizado.getName());
-      client.setEmail(clientActualizado.getEmail());
-      client.setNumberPhone(clientActualizado.getNumberPhone());
-      client.setIsFrecuent(clientActualizado.getIsFrecuent());
-      return repository.save(client);
-    }).orElseThrow(() -> new RuntimeException("Cliente con el id " + id + " no pudo ser actualizado"));
+     client.setName(clientActualizado.getName());
+     client.setEmail(clientActualizado.getEmail());
+     client.setNumberPhone(clientActualizado.getNumberPhone());
+     client.setIsFrecuent(clientActualizado.getIsFrecuent());
+     return repository.save(client);
+    }).orElseThrow(()-> new RuntimeException("Cliente con el id "+id+" no pudo ser actualizado"));
   }
 
   public void deleteClient(Long id){

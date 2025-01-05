@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -28,21 +29,16 @@ public class MenuRestaurant {
 
   private String description;
   @OneToOne
-  @JoinColumn(name = "restaurant_id", unique = true)
+  @JoinColumn(name = "restaurant_id",referencedColumnName = "id", unique = true)
   private Restaurant restaurant;
 
-  @OneToMany(mappedBy = "menuRestaurant", cascade = CascadeType.ALL)
-  private List<Dish> dishes;
+  @OneToMany(mappedBy = "menuRestaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Dish> dishes = new ArrayList<>();;
 
   public MenuRestaurant(Long idMenu, String description, Restaurant restaurant, List<Dish> dishes) {
     this.idMenu = idMenu;
     this.description = description;
     this.restaurant = restaurant;
-    this.dishes = dishes;
-  }
-
-  public MenuRestaurant(String description, List<Dish> dishes) {
-    this.description = description;
     this.dishes = dishes;
   }
 }
