@@ -12,7 +12,7 @@ import java.util.List;
 public class MenuResquetDTO {
   @NotNull
   private String description;
-  private List<DishRequestDTO> dishes;
   @NotNull
   private Long restaurantId;
+  private List<DishRequestDTO> dishes;
 }

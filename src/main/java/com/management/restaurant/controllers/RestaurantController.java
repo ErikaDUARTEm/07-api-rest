@@ -27,11 +27,8 @@ public class RestaurantController {
   }
   @PostMapping
   public RestaurantResponseDTO createRestaurant(@Validated @RequestBody RestaurantRequestDTO restaurantRequestDTO) {
-    // Convertir DTO a entidad
     Restaurant restaurant = RestaurantDtoConverter.convertToEntity(restaurantRequestDTO);
-    // Crear el restaurante
     Restaurant createdRestaurant = restaurantService.addRestaurant(restaurant);
-    // Devolver el DTO de respuesta
     return RestaurantDtoConverter.convertToResponseDTO(createdRestaurant);
   }
 

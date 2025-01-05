@@ -43,7 +43,7 @@ public class ClientService {
       return repository.save(client);
     }).orElseThrow(() -> new RuntimeException("Cliente con el id " + id + " no pudo ser actualizado"));
   }
-  
+
   public void deleteClient(Long id){
     repository.deleteById(id);
   }
