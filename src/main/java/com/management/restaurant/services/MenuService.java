@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @NoArgsConstructor
 public class MenuService {
@@ -20,5 +22,7 @@ public class MenuService {
   public MenuRestaurant createMenu(MenuRestaurant menuRestaurant) {
     return repository.save(menuRestaurant);
   }
-
+  public List<MenuRestaurant> getAllMenu(){
+    return repository.findAll();
+  }
 }

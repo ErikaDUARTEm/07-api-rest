@@ -2,6 +2,7 @@ package com.management.restaurant.utils;
 
 import com.management.restaurant.DTO.restaurant.MenuResponseDTO;
 import com.management.restaurant.DTO.restaurant.MenuResquetDTO;
+import com.management.restaurant.models.restaurant.Dish;
 import com.management.restaurant.models.restaurant.MenuRestaurant;
 import com.management.restaurant.models.restaurant.Restaurant;
 
@@ -24,7 +25,11 @@ public class MenuDtoConverter {
     menu.setDescription(menuRequestDTO.getDescription());
     menu.setRestaurant(restaurant);
     menu.setDishes(menuRequestDTO.getDishes().stream()
-      .map(DishDtoConverter::convertToEntity)
+      .map(dishRequestDTO -> {
+        Dish dish = DishDtoConverter.convertToEntity(dishRequestDTO);
+        dish.setMenuRestaurant(menu);
+        return dish;
+      })
       .collect(Collectors.toList()));
     return menu;
   }
