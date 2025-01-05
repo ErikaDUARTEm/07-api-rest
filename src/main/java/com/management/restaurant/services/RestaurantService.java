@@ -22,12 +22,11 @@ public class RestaurantService {
   public Restaurant addRestaurant(Restaurant restaurant){
    return repository.save(restaurant);
   }
-  public Restaurant restaurantFindById(Long id) {
-    return repository.findById(id)
-      .orElseThrow(() -> new RuntimeException("Restaurante no encontrado"));
-  }
   public RestaurantResponseDTO getRestaurantWithMenu(Long restaurantId) {
     Restaurant restaurant = repository.findMenuByRestaurant(restaurantId);
     return RestaurantDtoConverter.convertToResponseDTO(restaurant);
+  }
+  public void deleteRestaurant(Long id){
+    repository.deleteById(id);
   }
 }
