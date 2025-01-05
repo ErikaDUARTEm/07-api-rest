@@ -23,8 +23,8 @@ public class ClientService {
   public ClientService(ClientRepository repository) {
     this.repository = repository;
   }
-  public void addClient(Client cliente){
-    repository.save(cliente);
+  public Client addClient(Client cliente){
+   return repository.save(cliente);
   }
 
   public Optional<Client> showClientById(Long id){
@@ -43,8 +43,7 @@ public class ClientService {
       return repository.save(client);
     }).orElseThrow(() -> new RuntimeException("Cliente con el id " + id + " no pudo ser actualizado"));
   }
-
-
+  
   public void deleteClient(Long id){
     repository.deleteById(id);
   }

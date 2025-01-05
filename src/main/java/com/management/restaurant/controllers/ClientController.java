@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/cliente")
 public class ClientController {
 
-  private ClientService service;
+  private final ClientService service;
 
   @Autowired
   public ClientController(ClientService service) {
@@ -32,47 +32,40 @@ public class ClientController {
   }
 
   @PostMapping()
-  public ResponseEntity<String> addClient(@Validated @RequestBody ClientRequestDTO clientRequestDto) {
+  public ClientResponseDTO addClient(@Validated @RequestBody ClientRequestDTO clientRequestDto) {
     Client client = new Client(
       clientRequestDto.getName(),
       clientRequestDto.getEmail(),
       clientRequestDto.getNumberPhone()
     );
-    service.addClient(client);
-    return ResponseEntity.ok("Cliente agregado exitosamente.");
+    Client addedClient = service.addClient(client);
+    return ClientDtoConverter.convertToResponseDTO(addedClient);
   }
+
   @GetMapping
-  public ResponseEntity<List<ClientResponseDTO>> listClient(){
+  public List<ClientResponseDTO> listClient() {
     List<Client> clients = service.listClient();
-    List<ClientResponseDTO> response = clients.stream()
+    return clients.stream()
       .map(ClientDtoConverter::convertToResponseDTO)
       .collect(Collectors.toList());
-    return ResponseEntity.ok(response);
   }
+
   @GetMapping("/{id}")
-  public ResponseEntity<ClientResponseDTO> showClientById(@PathVariable Long id){
-   return service.showClientById(id)
-     .map(client -> ResponseEntity.ok(ClientDtoConverter.convertToResponseDTO(client)))
-     .orElse(ResponseEntity.notFound().build());
-}
+  public ClientResponseDTO showClientById(@PathVariable Long id) {
+    return service.showClientById(id)
+      .map(ClientDtoConverter::convertToResponseDTO)
+      .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+  }
+
   @PutMapping("/{id}")
-  public ResponseEntity<ClientResponseDTO> updateClient(@PathVariable Long id, @RequestBody @Validated ClientRequestDTO clientRequestDTO) {
-    try {
-      Client client = ClientDtoConverter.convertToEntity(clientRequestDTO);
-      Client actualizado = service.updateClient(id, client);
-      return ResponseEntity.ok(ClientDtoConverter.convertToResponseDTO(actualizado));
-    } catch (RuntimeException e) {
-      return ResponseEntity.notFound().build();
-    }
+  public ClientResponseDTO updateClient(@PathVariable Long id, @RequestBody @Validated ClientRequestDTO clientRequestDTO) {
+    Client client = ClientDtoConverter.convertToEntity(clientRequestDTO);
+    Client updatedClient = service.updateClient(id, client);
+    return ClientDtoConverter.convertToResponseDTO(updatedClient);
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<ClientResponseDTO> deleteClient(@PathVariable Long id){
-    try {
-      service.deleteClient(id);
-      return ResponseEntity.noContent().build();
-    } catch (RuntimeException e) {
-      return ResponseEntity.notFound().build();
-    }
+  public void deleteClient(@PathVariable Long id) {
+    service.deleteClient(id);
   }
 }
