@@ -1,9 +1,7 @@
 package com.management.restaurant.services;
 
 import com.management.restaurant.models.restaurant.Dish;
-import com.management.restaurant.models.restaurant.MenuRestaurant;
 import com.management.restaurant.repositories.DishRepository;
-import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +16,6 @@ public class DishService {
     this.repository = repository;
   }
   public List<Dish> getAllDish(){
-    return repository.findAll();
+      return repository.findAllDishes();
   }
 }

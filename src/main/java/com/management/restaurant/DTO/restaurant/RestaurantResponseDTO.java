@@ -1,6 +1,5 @@
 package com.management.restaurant.DTO.restaurant;
 
-import com.management.restaurant.models.restaurant.MenuRestaurant;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;

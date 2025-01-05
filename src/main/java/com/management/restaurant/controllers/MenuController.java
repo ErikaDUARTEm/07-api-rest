@@ -2,17 +2,11 @@ package com.management.restaurant.controllers;
 
 import com.management.restaurant.DTO.restaurant.MenuResponseDTO;
 import com.management.restaurant.DTO.restaurant.MenuResquetDTO;
-import com.management.restaurant.models.restaurant.Dish;
 import com.management.restaurant.models.restaurant.MenuRestaurant;
-import com.management.restaurant.models.restaurant.Restaurant;
 import com.management.restaurant.services.MenuService;
-import com.management.restaurant.services.RestaurantService;
-import com.management.restaurant.utils.DishDtoConverter;
 import com.management.restaurant.utils.MenuDtoConverter;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,13 +38,6 @@ public class MenuController {
     return MenuDtoConverter.convertToResponseDTO(menu);
   }
 
-  @GetMapping
-  public List<MenuResponseDTO> allMenu() {
-    List<MenuRestaurant> menus = service.getAllMenu();
-    return menus.stream()
-      .map(MenuDtoConverter::convertToResponseDTO)
-      .collect(Collectors.toList());
-  }
   @PutMapping()
   public MenuResponseDTO updateMenu(@Validated @RequestBody MenuResquetDTO menuRequestDTO) {
     MenuRestaurant updatedMenu = service.updateMenu(menuRequestDTO);

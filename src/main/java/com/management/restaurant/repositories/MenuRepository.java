@@ -1,11 +1,16 @@
 package com.management.restaurant.repositories;
 
+import com.management.restaurant.models.restaurant.Dish;
 import com.management.restaurant.models.restaurant.MenuRestaurant;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface MenuRepository extends JpaRepository<MenuRestaurant, Long> {
   Optional<MenuRestaurant> findByRestaurant_Id(Long restaurantId);
-  Optional<MenuRestaurant> findByIdMenuAndRestaurant_Id(Long idMenu, Long restaurantId);
+  @Query("SELECT m FROM MenuRestaurant m")
+  List<MenuRestaurant> findAllMenus();
+
 }

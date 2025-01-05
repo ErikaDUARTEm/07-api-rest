@@ -39,19 +39,14 @@ public class MenuService {
   public MenuRestaurant addMenu(MenuResquetDTO menuRequestDTO) {
     Restaurant restaurant = restaurantRepository.findById(menuRequestDTO.getRestaurantId())
       .orElseThrow(() -> new IllegalArgumentException("Restaurante no encontrado"));
-
     Optional<MenuRestaurant> existingMenu = menuRepository.findByRestaurant_Id(restaurant.getId());
     if (existingMenu.isPresent()) {
       throw new IllegalArgumentException("El restaurante ya tiene un menú asociado.");
     }
-
     MenuRestaurant menu = MenuDtoConverter.convertToEntity(menuRequestDTO, restaurant);
     return menuRepository.save(menu);
   }
 
-  public List<MenuRestaurant> getAllMenu(){
-    return menuRepository.findAll();
-  }
   public MenuRestaurant findMenuByRestaurantId(Long restaurantId) {
     return menuRepository.findByRestaurant_Id(restaurantId)
       .orElseThrow(() -> new RuntimeException("Menú no encontrado para el restaurante con ID: " + restaurantId));
@@ -93,9 +88,6 @@ public class MenuService {
       throw new EntityNotFoundException("Menu not found for restaurant with id " + restaurantId);
     }
   }
-
-
-
 }
 
 
