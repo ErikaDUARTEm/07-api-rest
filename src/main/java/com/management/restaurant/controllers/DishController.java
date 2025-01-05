@@ -49,6 +49,6 @@ public class DishController {
   @DeleteMapping("/{id}")
   public ResponseEntity<String> deleteDish(@PathVariable Long id) {
     service.deleteDish(id);
-    return ResponseEntity.ok("Dish eliminado exitosamente.");
+    return ResponseEntity.ok("Plato eliminado exitosamente.");
   }
 }
