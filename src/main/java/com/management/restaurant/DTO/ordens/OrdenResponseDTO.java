@@ -16,5 +16,7 @@ public class OrdenResponseDTO {
   private LocalDateTime dateOrder;
   private StatusOrden statusOrder;
   private ClientResponseDTO client;
+  private Boolean isFrecuent;
   private List<ItemResponseDTO> items;
+
 }

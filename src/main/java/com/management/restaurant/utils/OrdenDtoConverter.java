@@ -20,6 +20,7 @@ public class OrdenDtoConverter {
     ordenResponseDTO.setPriceTotal(orden.getPriceTotal());
     ordenResponseDTO.setDateOrder(orden.getDateOrder());
     ordenResponseDTO.setStatusOrder(orden.getStatusOrder());
+    ordenResponseDTO.setIsFrecuent(orden.getClient().getIsFrecuent());
     ordenResponseDTO.setClient(ClientDtoConverter.convertToResponseDTO(orden.getClient()));
     ordenResponseDTO.setItems(ItemDtoConverter.convertToResponseDTOList(orden.getItems()));
     return ordenResponseDTO;

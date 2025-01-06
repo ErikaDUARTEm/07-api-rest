@@ -38,7 +38,6 @@ public class ClientService implements Observer<Client>{
   }
 
   public Optional<Client> showClientById(Long id){
-    assert clientRepository != null;
     return clientRepository.findById(id);
   }
   public List<Client> listClient(){
@@ -46,15 +45,42 @@ public class ClientService implements Observer<Client>{
     return clientRepository.findAll();
   }
 
-  public Client updateClient(Long id, Client clientActualizado){
+  public Client updateClient(Long id, Client clientUpdated) {
     assert clientRepository != null;
     return clientRepository.findById(id).map(client -> {
-     client.setName(clientActualizado.getName());
-     client.setEmail(clientActualizado.getEmail());
-     client.setNumberPhone(clientActualizado.getNumberPhone());
-     client.setIsFrecuent(clientActualizado.getIsFrecuent());
-     return clientRepository.save(client);
-    }).orElseThrow(()-> new RuntimeException("Cliente con el id "+id+" no pudo ser actualizado"));
+      updateClientDetails(client, clientUpdated);
+      return clientRepository.save(client);
+    }).orElseThrow(() -> new RuntimeException("Cliente con el id " + id + " no pudo ser actualizado"));
+  }
+  private void updateClientName(Client client, Client clientUpdated) {
+    if (clientUpdated.getName() != null) {
+      client.setName(clientUpdated.getName());
+    }
+  }
+
+  private void updateClientEmail(Client client, Client clientUpdated) {
+    if (clientUpdated.getEmail() != null) {
+      client.setEmail(clientUpdated.getEmail());
+    }
+  }
+
+  private void updateClientNumberPhone(Client client, Client clientUpdated) {
+    if (clientUpdated.getNumberPhone() != null) {
+      client.setNumberPhone(clientUpdated.getNumberPhone());
+    }
+  }
+
+  private void updateClientIsFrecuent(Client client, Client clientUpdated) {
+    if (clientUpdated.getIsFrecuent() != null) {
+      client.setIsFrecuent(clientUpdated.getIsFrecuent());
+    }
+  }
+
+  private void updateClientDetails(Client client, Client clientUpdated) {
+    updateClientName(client, clientUpdated);
+    updateClientEmail(client, clientUpdated);
+    updateClientNumberPhone(client, clientUpdated);
+    updateClientIsFrecuent(client, clientUpdated);
   }
 
   public void deleteClient(Long id) {
@@ -88,11 +114,12 @@ public class ClientService implements Observer<Client>{
   @Override
   public void updateObserver(Client client) {
     assert ordenRepository != null;
-    int numeroPedidos = ordenRepository.countByClient(client);
+    int numeroPedidos = ordenRepository.countByClientId(client.getId());
     if (numeroPedidos >= 10 && !client.getIsFrecuent()) {
       client.setIsFrecuent(true);
       assert clientRepository != null;
       clientRepository.save(client);
+      System.out.println("Cliente actualizado a frecuente: " + client.getName());
     }
   }
 }

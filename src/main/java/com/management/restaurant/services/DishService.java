@@ -68,7 +68,7 @@ public class DishService implements Observer<Dish> {
     Dish dish = repository.findById(id).orElseThrow(() -> new IllegalArgumentException("El plato no existe."));
 
     removeDishObserver(this);
-    repository.deleteById(id);
+    repository.deleteById(dish.getId());
   }
 
   public Dish findDishByName(String name) {

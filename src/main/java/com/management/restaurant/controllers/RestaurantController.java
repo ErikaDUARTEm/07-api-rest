@@ -35,6 +35,7 @@ public class RestaurantController {
     Restaurant createdRestaurant = restaurantService.addRestaurant(restaurant);
     return RestaurantDtoConverter.convertToResponseDTO(createdRestaurant);
   }
+
   @GetMapping("/{restaurantId}")
   public ResponseEntity<RestaurantResponseDTO> getRestaurantWithMenu(@PathVariable Long restaurantId) {
     RestaurantResponseDTO restaurantWithMenu = restaurantService.getRestaurantWithMenu(restaurantId);

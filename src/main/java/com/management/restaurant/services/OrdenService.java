@@ -46,17 +46,12 @@ public class OrdenService {
     List<Item> items = validateAndConvertItems(ordenRequestDTO.getItems());
 
     double priceTotal = calculateTotalPrice(items);
+    clientService.updateObserver(client);
     if (client.getIsFrecuent()) {
       priceTotal = applyDiscount(priceTotal, 2.38);
     }
-    Orden orden = createAndSaveOrden(ordenRequestDTO, dateOrder, statusOrder, client, items);
+    Orden orden = createAndSaveOrden(ordenRequestDTO, dateOrder, statusOrder, client, items,priceTotal);
     clientService.notifyClientObservers(orden.getClient());
-    items.forEach(item -> {
-      Dish dish = dishService.findDishByName(item.getName());
-      if (dish != null) {
-        dishService.notifyDishObservers(dish);
-      }
-    });
     return OrdenDtoConverter.convertToResponseDTO(orden);
   }
 
@@ -66,18 +61,35 @@ public class OrdenService {
   }
 
   private List<Item> validateAndConvertItems(List<ItemRequestDTO> items) {
-    if (items == null || items.isEmpty()) {
-      throw new IllegalArgumentException("El pedido debe tener al menos un item.");
+      if (items == null || items.isEmpty()) {
+        throw new IllegalArgumentException("El pedido debe tener al menos un item.");
+      }
+      return items.stream()
+        .map(this::convertAndValidateItem)
+        .collect(Collectors.toList());
+  }
+  private Item convertAndValidateItem(ItemRequestDTO itemDTO) {
+    Dish dish = findDishByName(itemDTO.getName());
+    Item item = ItemDtoConverter.convertToEntity(itemDTO);
+    item.setDish(dish); return item;
+  }
+  private Dish findDishByName(String name) {
+    Dish dish = dishService.findDishByName(name);
+    if (dish == null) {
+      throw new RuntimeException("El plato con nombre " + name + " no existe");
     }
-    return ItemDtoConverter.convertToEntityList(items);
+    return dish;
   }
 
-  private Orden createAndSaveOrden(OrdenRequestDTO ordenRequestDTO, LocalDateTime dateOrder, StatusOrden statusOrder, Client client, List<Item> items) {
+  private Orden createAndSaveOrden(OrdenRequestDTO ordenRequestDTO, LocalDateTime dateOrder, StatusOrden statusOrder, Client client, List<Item> items, Double priceTotal) {
     Orden orden = ordenFactory.createOrden(ordenRequestDTO.getPriceTotal(), dateOrder, statusOrder, client, items);
-    for (Item item : items) {
-      item.setOrden(orden);
-    }
+    orden.setPriceTotal(priceTotal);
+    items.forEach(item -> setItemOrdenAndDish(item, orden));
     return ordenRepository.save(orden);
+  }
+  private void setItemOrdenAndDish(Item item, Orden orden) {
+    item.setOrden(orden);
+    item.setDish(findDishByName(item.getName()));
   }
   private Double calculateTotalPrice(List<Item> items) {
     return items.stream()
