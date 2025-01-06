@@ -1,5 +1,6 @@
 package com.management.restaurant.services;
 
+import com.management.restaurant.DTO.ordens.ItemRequestDTO;
 import com.management.restaurant.DTO.ordens.OrdenRequestDTO;
 import com.management.restaurant.DTO.ordens.OrdenResponseDTO;
 import com.management.restaurant.enums.StatusOrden;
@@ -34,25 +35,32 @@ public class OrdenService {
   public OrdenResponseDTO createOrden(OrdenRequestDTO ordenRequestDTO) {
     LocalDateTime dateOrder = LocalDateTime.now();
     StatusOrden statusOrder = StatusOrden.PENDING;
+    Client client = findClientById(ordenRequestDTO.getClientId());
+    List<Item> items = validateAndConvertItems(ordenRequestDTO.getItems());
 
-    Client client = clientRepository.findById(ordenRequestDTO.getClientId())
-      .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-
-    if (ordenRequestDTO.getItems() == null || ordenRequestDTO.getItems().isEmpty()) {
-      throw new IllegalArgumentException("El pedido debe tener al menos un item.");
-    }
-
-    List<Item> items = ItemDtoConverter.convertToEntityList(ordenRequestDTO.getItems());
-    Orden orden = ordenFactory.createOrden(ordenRequestDTO.getPriceTotal(), dateOrder, statusOrder, client, items);
-
-    for (Item item : items) {
-      item.setOrden(orden);
-    }
-
-    orden = ordenRepository.save(orden);
+    Orden orden = createAndSaveOrden(ordenRequestDTO, dateOrder, statusOrder, client, items);
     return OrdenDtoConverter.convertToResponseDTO(orden);
   }
 
+  private Client findClientById(Long clientId) {
+    return clientRepository.findById(clientId)
+      .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+  }
+
+  private List<Item> validateAndConvertItems(List<ItemRequestDTO> items) {
+    if (items == null || items.isEmpty()) {
+      throw new IllegalArgumentException("El pedido debe tener al menos un item.");
+    }
+    return ItemDtoConverter.convertToEntityList(items);
+  }
+
+  private Orden createAndSaveOrden(OrdenRequestDTO ordenRequestDTO, LocalDateTime dateOrder, StatusOrden statusOrder, Client client, List<Item> items) {
+    Orden orden = ordenFactory.createOrden(ordenRequestDTO.getPriceTotal(), dateOrder, statusOrder, client, items);
+    for (Item item : items) {
+      item.setOrden(orden);
+    }
+    return ordenRepository.save(orden);
+  }
 
   public List<OrdenResponseDTO> getAllOrdenes() {
     return ordenRepository.findAll().stream()
@@ -66,10 +74,16 @@ public class OrdenService {
   }
 
   public OrdenResponseDTO updateOrden(Long id, OrdenRequestDTO ordenRequestDTO) {
-    Orden orden = ordenRepository.findById(id).orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+    Orden orden = ordenRepository.findById(id)
+      .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+
+    Client client = clientRepository.findById(ordenRequestDTO.getClientId())
+      .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+
     orden.setPriceTotal(ordenRequestDTO.getPriceTotal());
     orden.setStatusOrder(ordenRequestDTO.getStatusOrder());
-    orden.setClient(new Client(ordenRequestDTO.getClientId()));
+    orden.setClient(client);
+
     return OrdenDtoConverter.convertToResponseDTO(ordenRepository.save(orden));
   }
 
