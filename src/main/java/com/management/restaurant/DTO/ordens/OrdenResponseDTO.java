@@ -2,7 +2,6 @@ package com.management.restaurant.DTO.ordens;
 
 import com.management.restaurant.DTO.client.ClientResponseDTO;
 import com.management.restaurant.enums.StatusOrden;
-import com.management.restaurant.models.client.Client;
 import lombok.Getter;
 import lombok.Setter;
 

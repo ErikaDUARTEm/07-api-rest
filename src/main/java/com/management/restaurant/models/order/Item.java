@@ -1,5 +1,6 @@
 package com.management.restaurant.models.order;
 
+import com.management.restaurant.models.restaurant.Dish;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,6 +25,9 @@ public class Item {
   @ManyToOne
   @JoinColumn(name = "orden_id", nullable = false)
   private Orden orden;
+  @ManyToOne
+  @JoinColumn(name = "dish_id", nullable = false)
+  private Dish dish;
 
   public Item(Long id, String name, Double price, Integer quantity, Orden orden) {
     this.id = id;

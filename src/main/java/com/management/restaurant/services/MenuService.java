@@ -1,8 +1,6 @@
 package com.management.restaurant.services;
 
-import com.management.restaurant.DTO.restaurant.MenuResponseDTO;
 import com.management.restaurant.DTO.restaurant.MenuResquetDTO;
-import com.management.restaurant.models.client.Client;
 import com.management.restaurant.models.restaurant.Dish;
 import com.management.restaurant.models.restaurant.MenuRestaurant;
 import com.management.restaurant.models.restaurant.Restaurant;

@@ -3,9 +3,7 @@ package com.management.restaurant.controllers;
 
 import com.management.restaurant.DTO.ordens.OrdenRequestDTO;
 import com.management.restaurant.DTO.ordens.OrdenResponseDTO;
-import com.management.restaurant.models.order.Orden;
 import com.management.restaurant.services.OrdenService;
-import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;

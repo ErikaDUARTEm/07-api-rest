@@ -1,6 +1,5 @@
 package com.management.restaurant.models.restaurant;
 
-import com.management.restaurant.DTO.restaurant.DishRequestDTO;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

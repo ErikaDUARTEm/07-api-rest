@@ -11,6 +11,10 @@ import java.util.Collections;
 public class OrdenDtoConverter {
 
   public static OrdenResponseDTO convertToResponseDTO(Orden orden) {
+    if (orden == null) {
+      System.out.println("Orden es nulo");
+      return null;
+    }
     OrdenResponseDTO ordenResponseDTO = new OrdenResponseDTO();
     ordenResponseDTO.setId(orden.getOrdenId());
     ordenResponseDTO.setPriceTotal(orden.getPriceTotal());

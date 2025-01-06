@@ -6,7 +6,6 @@ import com.management.restaurant.models.client.Client;
 import com.management.restaurant.services.ClientService;
 import com.management.restaurant.utils.ClientDtoConverter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;

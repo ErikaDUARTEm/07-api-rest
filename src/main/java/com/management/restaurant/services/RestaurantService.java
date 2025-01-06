@@ -1,15 +1,15 @@
 package com.management.restaurant.services;
 
-import com.management.restaurant.DTO.restaurant.RestaurantRequestDTO;
 import com.management.restaurant.DTO.restaurant.RestaurantResponseDTO;
-import com.management.restaurant.models.client.Client;
 import com.management.restaurant.models.restaurant.Restaurant;
 import com.management.restaurant.repositories.RestaurantRepository;
 import com.management.restaurant.utils.RestaurantDtoConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RestaurantService {
@@ -23,10 +23,21 @@ public class RestaurantService {
    return repository.save(restaurant);
   }
   public RestaurantResponseDTO getRestaurantWithMenu(Long restaurantId) {
-    Restaurant restaurant = repository.findMenuByRestaurant(restaurantId);
-    return RestaurantDtoConverter.convertToResponseDTO(restaurant);
+    Optional<Restaurant> optionalRestaurant = repository.findMenuByRestaurant(restaurantId);
+    if (optionalRestaurant.isPresent()) {
+      Restaurant restaurant = optionalRestaurant.get();
+      return RestaurantDtoConverter.convertToResponseDTO(restaurant);
+    } else {
+      return repository.findById(restaurantId)
+        .map(RestaurantDtoConverter::convertToResponseDTO)
+        .orElse(null);
+    }
   }
+
   public void deleteRestaurant(Long id){
+    if (!repository.existsById(id)) {
+      throw new EmptyResultDataAccessException("Restaurante no encontrado con ID: " + id, 1);
+    }
     repository.deleteById(id);
   }
 }

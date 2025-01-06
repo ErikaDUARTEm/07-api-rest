@@ -8,7 +8,9 @@ import com.management.restaurant.factories.OrdenFactory;
 import com.management.restaurant.models.client.Client;
 import com.management.restaurant.models.order.Item;
 import com.management.restaurant.models.order.Orden;
+import com.management.restaurant.models.restaurant.Dish;
 import com.management.restaurant.repositories.ClientRepository;
+import com.management.restaurant.repositories.DishRepository;
 import com.management.restaurant.repositories.OrdenRepository;
 import com.management.restaurant.utils.ItemDtoConverter;
 import com.management.restaurant.utils.OrdenDtoConverter;
@@ -24,12 +26,17 @@ public class OrdenService {
   private final OrdenRepository ordenRepository;
   private final OrdenFactory ordenFactory;
   private final ClientRepository clientRepository;
+  private final ClientService clientService;
+  private final DishService dishService;
 
   @Autowired
-  public OrdenService(OrdenRepository ordenRepository, OrdenFactory ordenFactory, ClientRepository clientRepository) {
+  public OrdenService(OrdenRepository ordenRepository, OrdenFactory ordenFactory, ClientRepository clientRepository, DishRepository dishRepository, ClientService clientService, DishService dishService) {
     this.ordenRepository = ordenRepository;
     this.ordenFactory = ordenFactory;
     this.clientRepository = clientRepository;
+    this.clientService = clientService;
+    this.dishService = dishService;
+
   }
 
   public OrdenResponseDTO createOrden(OrdenRequestDTO ordenRequestDTO) {
@@ -38,7 +45,18 @@ public class OrdenService {
     Client client = findClientById(ordenRequestDTO.getClientId());
     List<Item> items = validateAndConvertItems(ordenRequestDTO.getItems());
 
+    double priceTotal = calculateTotalPrice(items);
+    if (client.getIsFrecuent()) {
+      priceTotal = applyDiscount(priceTotal, 2.38);
+    }
     Orden orden = createAndSaveOrden(ordenRequestDTO, dateOrder, statusOrder, client, items);
+    clientService.notifyClientObservers(orden.getClient());
+    items.forEach(item -> {
+      Dish dish = dishService.findDishByName(item.getName());
+      if (dish != null) {
+        dishService.notifyDishObservers(dish);
+      }
+    });
     return OrdenDtoConverter.convertToResponseDTO(orden);
   }
 
@@ -61,11 +79,24 @@ public class OrdenService {
     }
     return ordenRepository.save(orden);
   }
+  private Double calculateTotalPrice(List<Item> items) {
+    return items.stream()
+      .mapToDouble(item -> item.getPrice() * item.getQuantity())
+      .sum();
+  }
+
+  private Double applyDiscount(Double priceTotal, Double discountPercentage) {
+    return priceTotal * ((100 - discountPercentage) / 100);
+  }
 
   public List<OrdenResponseDTO> getAllOrdenes() {
-    return ordenRepository.findAll().stream()
-      .map(OrdenDtoConverter::convertToResponseDTO)
-      .collect(Collectors.toList());
+    try {
+      return ordenRepository.findAll().stream()
+        .map(OrdenDtoConverter::convertToResponseDTO)
+        .collect(Collectors.toList());
+    } catch (Exception e) {
+      throw new RuntimeException("Error al obtener todas las órdenes", e);
+    }
   }
 
   public OrdenResponseDTO getOrdenById(Long id) {
@@ -79,12 +110,13 @@ public class OrdenService {
 
     Client client = clientRepository.findById(ordenRequestDTO.getClientId())
       .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-
-    orden.setPriceTotal(ordenRequestDTO.getPriceTotal());
+    List<Item> items = validateAndConvertItems(ordenRequestDTO.getItems());
+    orden.setItems(items);
+    orden.setPriceTotal(calculateTotalPrice(items));
     orden.setStatusOrder(ordenRequestDTO.getStatusOrder());
     orden.setClient(client);
-
-    return OrdenDtoConverter.convertToResponseDTO(ordenRepository.save(orden));
+    Orden updatedOrden = ordenRepository.save(orden);
+    return OrdenDtoConverter.convertToResponseDTO(updatedOrden);
   }
 
   public void deleteOrden(Long id) {
