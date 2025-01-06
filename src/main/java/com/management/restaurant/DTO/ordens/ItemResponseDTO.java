@@ -1,13 +1,13 @@
-package com.management.restaurant.DTO.restaurant;
+package com.management.restaurant.DTO.ordens;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class DishResponseDTO {
+public class ItemResponseDTO {
   private Long id;
   private String name;
   private Double price;
-  private Boolean popular;
+  private Integer quantity;
 }

@@ -42,4 +42,8 @@ public class Client {
     this.numberPhone = numberPhone;
     this.isFrecuent = isFrecuent;
   }
+
+  public Client(Long clientId) {
+    this.id = clientId;
+  }
 }
