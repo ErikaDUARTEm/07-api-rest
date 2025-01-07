@@ -3,6 +3,7 @@ package com.management.restaurant.controllers;
 
 import com.management.restaurant.DTO.ordens.OrdenRequestDTO;
 import com.management.restaurant.DTO.ordens.OrdenResponseDTO;
+import com.management.restaurant.enums.StatusOrden;
 import com.management.restaurant.services.OrdenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -53,5 +54,11 @@ public class OrdenController {
   @DeleteMapping("/{id}")
   public void deleteOrden(@PathVariable Long id) {
     ordenService.deleteOrden(id);
+  }
+  @PutMapping("/{id}/{newStatus}")
+  public ResponseEntity<OrdenResponseDTO> changeStateOrder(@PathVariable Long id, @PathVariable String newStatus){
+    StatusOrden status = StatusOrden.valueOf(newStatus.toUpperCase());
+    ordenService.changeStateOrder(id, status);
+    return ResponseEntity.ok(ordenService.getOrdenById(id));
   }
 }

@@ -1,6 +1,6 @@
 package com.management.restaurant.services.interfaces;
 
 
-public interface Observer<T> {
+public interface IObserver<T> {
   void updateObserver(T entity);
 }

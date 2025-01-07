@@ -3,7 +3,7 @@ package com.management.restaurant.services;
 import com.management.restaurant.models.client.Client;
 import com.management.restaurant.repositories.ClientRepository;
 import com.management.restaurant.repositories.OrdenRepository;
-import com.management.restaurant.services.interfaces.Observer;
+import com.management.restaurant.services.interfaces.IObserver;
 import com.management.restaurant.services.observer.ObserverManager;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +18,7 @@ import java.util.Optional;
 @Getter
 @Setter
 @NoArgsConstructor(force = true)
-public class ClientService implements Observer<Client>{
+public class ClientService implements IObserver<Client> {
   private final ObserverManager<Client> observerManager;
   private final ClientRepository clientRepository;
   private final OrdenRepository ordenRepository;
@@ -98,9 +98,9 @@ public class ClientService implements Observer<Client>{
     observerManager.addObserver(this);
   }
 
-  public void removeClientObserver(Observer<Client> observer) {
+  public void removeClientObserver(IObserver<Client> IObserver) {
     assert observerManager != null;
-    observerManager.removeObserver(observer);
+    observerManager.removeObserver(IObserver);
   }
 
   public void notifyClientObservers(Client client) {

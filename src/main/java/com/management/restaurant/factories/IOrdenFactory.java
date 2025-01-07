@@ -9,6 +9,6 @@ import com.management.restaurant.models.order.Orden;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface OrdenFactory {
+public interface IOrdenFactory {
     Orden createOrden(Double priceTotal, LocalDateTime dateOrder, StatusOrden statusOrder, Client client, List<Item> items);
 }

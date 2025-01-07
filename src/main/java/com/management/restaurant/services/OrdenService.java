@@ -4,7 +4,7 @@ import com.management.restaurant.DTO.ordens.ItemRequestDTO;
 import com.management.restaurant.DTO.ordens.OrdenRequestDTO;
 import com.management.restaurant.DTO.ordens.OrdenResponseDTO;
 import com.management.restaurant.enums.StatusOrden;
-import com.management.restaurant.factories.OrdenFactory;
+import com.management.restaurant.factories.IOrdenFactory;
 import com.management.restaurant.models.client.Client;
 import com.management.restaurant.models.order.Item;
 import com.management.restaurant.models.order.Orden;
@@ -12,30 +12,44 @@ import com.management.restaurant.models.restaurant.Dish;
 import com.management.restaurant.repositories.ClientRepository;
 import com.management.restaurant.repositories.DishRepository;
 import com.management.restaurant.repositories.OrdenRepository;
+import com.management.restaurant.strategy.IStatusOrdenStrategy;
+import com.management.restaurant.strategy.StateInPreparation;
+import com.management.restaurant.strategy.StatusCancelled;
+import com.management.restaurant.strategy.StatusCompleted;
+import com.management.restaurant.strategy.StatusDelivered;
 import com.management.restaurant.utils.ItemDtoConverter;
 import com.management.restaurant.utils.OrdenDtoConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 public class OrdenService {
   private final OrdenRepository ordenRepository;
-  private final OrdenFactory ordenFactory;
+  private final IOrdenFactory IOrdenFactory;
   private final ClientRepository clientRepository;
   private final ClientService clientService;
   private final DishService dishService;
+  private final Map<StatusOrden, IStatusOrdenStrategy> statusStrategy;
 
   @Autowired
-  public OrdenService(OrdenRepository ordenRepository, OrdenFactory ordenFactory, ClientRepository clientRepository, DishRepository dishRepository, ClientService clientService, DishService dishService) {
+  public OrdenService(OrdenRepository ordenRepository, IOrdenFactory IOrdenFactory, ClientRepository clientRepository, DishRepository dishRepository, ClientService clientService, DishService dishService) {
     this.ordenRepository = ordenRepository;
-    this.ordenFactory = ordenFactory;
+    this.IOrdenFactory = IOrdenFactory;
     this.clientRepository = clientRepository;
     this.clientService = clientService;
     this.dishService = dishService;
+
+    statusStrategy = new HashMap<>();
+    statusStrategy.put(StatusOrden.IN_PREPARATION, new StateInPreparation());
+    statusStrategy.put(StatusOrden.COMPLETED, new StatusCompleted());
+    statusStrategy.put(StatusOrden.CANCELLED, new StatusCancelled());
+    statusStrategy.put(StatusOrden.DELIVERED, new StatusDelivered());
 
   }
 
@@ -96,7 +110,7 @@ public class OrdenService {
   }
 
   private Orden createAndSaveOrden(OrdenRequestDTO ordenRequestDTO, LocalDateTime dateOrder, StatusOrden statusOrder, Client client, List<Item> items, Double priceTotal) {
-    Orden orden = ordenFactory.createOrden(ordenRequestDTO.getPriceTotal(), dateOrder, statusOrder, client, items);
+    Orden orden = IOrdenFactory.createOrden(ordenRequestDTO.getPriceTotal(), dateOrder, statusOrder, client, items);
     orden.setPriceTotal(priceTotal);
     items.forEach(item -> setItemOrdenAndDish(item, orden));
     return ordenRepository.save(orden);
@@ -158,4 +172,15 @@ public class OrdenService {
       }
     });
   }
+  public void changeStateOrder(Long ordenId, StatusOrden newStatus) {
+    Orden orden = ordenRepository.findById(ordenId).orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+    IStatusOrdenStrategy strategy = statusStrategy.get(newStatus);
+    if (strategy == null) {
+     throw new IllegalArgumentException("Estado no reconocido: " + newStatus);
+    }
+    orden.setStatusOrdenStrategy(strategy);
+    orden.handleStatus();
+    ordenRepository.save(orden);
+  }
+
 }

@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
-public class OrdenFactoryImplementation  implements OrdenFactory{
+public class OrdenFactoryImplementation implements IOrdenFactory {
   @Override
   public Orden createOrden(Double priceTotal, LocalDateTime dateOrder, StatusOrden statusOrder, Client client,  List<Item> items) {
       Orden orden = new Orden();

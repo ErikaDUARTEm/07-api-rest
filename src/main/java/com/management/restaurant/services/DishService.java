@@ -5,7 +5,7 @@ import com.management.restaurant.models.restaurant.Dish;
 import com.management.restaurant.models.restaurant.MenuRestaurant;
 import com.management.restaurant.repositories.DishRepository;
 import com.management.restaurant.repositories.MenuRepository;
-import com.management.restaurant.services.interfaces.Observer;
+import com.management.restaurant.services.interfaces.IObserver;
 import com.management.restaurant.services.observer.ObserverManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class DishService implements Observer<Dish> {
+public class DishService implements IObserver<Dish> {
   private final ObserverManager<Dish> observerManager;
   private final DishRepository repository;
   private final MenuRepository menuRepository;
@@ -78,8 +78,8 @@ public class DishService implements Observer<Dish> {
     observerManager.addObserver(this);
   }
 
-  public void removeDishObserver(Observer<Dish> observer) {
-    observerManager.removeObserver(observer);
+  public void removeDishObserver(IObserver<Dish> IObserver) {
+    observerManager.removeObserver(IObserver);
   }
 
   public void notifyDishObservers(Dish dish) {
