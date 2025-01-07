@@ -88,7 +88,7 @@ public class DishService implements Observer<Dish> {
 
   @Override
   public void updateObserver(Dish dish) {
-    int purchaseCount = repository.countPopularDishes(dish.getId());
+    Long purchaseCount = repository.countPopularDishes(dish.getId());
     if (purchaseCount > 100 && !dish.getPopular()) {
       dish.setPopular(true);
       dish.setPrice(calculateNewPriceWithIncrease(dish.getPrice()));
@@ -98,4 +98,5 @@ public class DishService implements Observer<Dish> {
   private Double calculateNewPriceWithIncrease(Double currentPrice) {
     return currentPrice * 1.0573;
   }
+
 }

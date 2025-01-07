@@ -119,7 +119,6 @@ public class ClientService implements Observer<Client>{
       client.setIsFrecuent(true);
       assert clientRepository != null;
       clientRepository.save(client);
-      System.out.println("Cliente actualizado a frecuente: " + client.getName());
     }
   }
 }

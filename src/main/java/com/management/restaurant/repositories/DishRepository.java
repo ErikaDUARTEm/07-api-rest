@@ -11,8 +11,8 @@ public interface DishRepository extends JpaRepository<Dish, Long> {
   @Query("SELECT d FROM Dish d")
   List<Dish> findAllDishes();
 
-  @Query("SELECT COUNT(i) FROM Item i WHERE i.dish.id = :dishId")
-  Integer countPopularDishes(Long dishId);
+  @Query(value = "SELECT COUNT(*) FROM Item i WHERE i.dish_id = :dishId", nativeQuery = true)
+  Long countPopularDishes(Long dishId);
 
   Dish findByName(String name);
 }

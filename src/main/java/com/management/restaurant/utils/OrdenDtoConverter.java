@@ -7,6 +7,7 @@ import com.management.restaurant.models.client.Client;
 import com.management.restaurant.models.order.Orden;
 
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 public class OrdenDtoConverter {
 
@@ -22,7 +23,9 @@ public class OrdenDtoConverter {
     ordenResponseDTO.setStatusOrder(orden.getStatusOrder());
     ordenResponseDTO.setIsFrecuent(orden.getClient().getIsFrecuent());
     ordenResponseDTO.setClient(ClientDtoConverter.convertToResponseDTO(orden.getClient()));
-    ordenResponseDTO.setItems(ItemDtoConverter.convertToResponseDTOList(orden.getItems()));
+    ordenResponseDTO.setItems(orden.getItems().stream()
+      .map(ItemDtoConverter::convertToResponseDTO)
+      .collect(Collectors.toList()));
     return ordenResponseDTO;
   }
 

@@ -52,6 +52,19 @@ public class OrdenService {
     }
     Orden orden = createAndSaveOrden(ordenRequestDTO, dateOrder, statusOrder, client, items,priceTotal);
     clientService.notifyClientObservers(orden.getClient());
+    items.forEach(item ->{
+      Dish dish = item.getDish();
+      if(dish != null){
+        notifyDishObserversForItems(items);
+        dishService.updateObserver(dish);
+        item.setDish(dishService.findDishByName(item.getName()));
+        if(dish.getPopular()){
+          item.setPrice(dish.getPrice());
+        }
+      }
+    });
+    priceTotal = calculateTotalPrice(items);
+    orden.setPriceTotal(priceTotal);
     return OrdenDtoConverter.convertToResponseDTO(orden);
   }
 
@@ -71,7 +84,8 @@ public class OrdenService {
   private Item convertAndValidateItem(ItemRequestDTO itemDTO) {
     Dish dish = findDishByName(itemDTO.getName());
     Item item = ItemDtoConverter.convertToEntity(itemDTO);
-    item.setDish(dish); return item;
+    item.setDish(dish);
+    return item;
   }
   private Dish findDishByName(String name) {
     Dish dish = dishService.findDishByName(name);
@@ -133,5 +147,13 @@ public class OrdenService {
 
   public void deleteOrden(Long id) {
     ordenRepository.deleteById(id);
+  }
+  private void notifyDishObserversForItems(List<Item> items) {
+    items.forEach(item -> {
+      Dish dish = item.getDish();
+      if (dish != null) {
+        dishService.notifyDishObservers(dish);
+      }
+    });
   }
 }

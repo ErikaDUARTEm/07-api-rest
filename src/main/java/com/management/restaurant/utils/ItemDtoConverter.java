@@ -1,8 +1,10 @@
 package com.management.restaurant.utils;
 
+import com.management.restaurant.DTO.ordens.DishDTO;
 import com.management.restaurant.DTO.ordens.ItemRequestDTO;
 import com.management.restaurant.DTO.ordens.ItemResponseDTO;
 import com.management.restaurant.models.order.Item;
+import com.management.restaurant.models.restaurant.Dish;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,10 +15,16 @@ public class ItemDtoConverter {
     ItemResponseDTO itemResponseDTO = new ItemResponseDTO();
     itemResponseDTO.setId(item.getId());
     itemResponseDTO.setName(item.getName());
-    itemResponseDTO.setPrice(item.getPrice());
     itemResponseDTO.setQuantity(item.getQuantity());
+    DishDTO dishDto = new DishDTO();
+    dishDto.setId(item.getDish().getId());
+    dishDto.setName(item.getDish().getName());
+    dishDto.setPrice(item.getDish().getPrice());
+    dishDto.setPopular(item.getDish().getPopular());
+    itemResponseDTO.setDish(dishDto);
     return itemResponseDTO;
   }
+
 
   public static List<Item> convertToEntityList(List<ItemRequestDTO> itemRequestDTOs) {
     return itemRequestDTOs.stream()

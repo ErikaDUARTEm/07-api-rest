@@ -1,6 +1,5 @@
 package com.management.restaurant.DTO.ordens;
 
-import com.management.restaurant.models.restaurant.Dish;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,9 +7,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ItemResponseDTO {
+public class DishDTO {
   private Long id;
   private String name;
-  private Integer quantity;
-  private DishDTO dish;
+  private Double price;
+  private Boolean popular;
 }
