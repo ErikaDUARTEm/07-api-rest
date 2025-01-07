@@ -133,12 +133,14 @@ public class OrdenService {
   public OrdenResponseDTO updateOrden(Long id, OrdenRequestDTO ordenRequestDTO) {
     Orden orden = ordenRepository.findById(id)
       .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
-
     Client client = clientRepository.findById(ordenRequestDTO.getClientId())
       .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-    List<Item> items = validateAndConvertItems(ordenRequestDTO.getItems());
-    orden.setItems(items);
-    orden.setPriceTotal(calculateTotalPrice(items));
+
+    if (ordenRequestDTO.getItems() != null && !ordenRequestDTO.getItems().isEmpty()) {
+      List<Item> items = validateAndConvertItems(ordenRequestDTO.getItems());
+      orden.setItems(items);
+      orden.setPriceTotal(calculateTotalPrice(items));
+    }
     orden.setStatusOrder(ordenRequestDTO.getStatusOrder());
     orden.setClient(client);
     Orden updatedOrden = ordenRepository.save(orden);
