@@ -6,6 +6,8 @@ import com.management.restaurant.models.client.Client;
 import com.management.restaurant.services.ClientService;
 import com.management.restaurant.utils.ClientDtoConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -31,12 +34,9 @@ public class ClientController {
   }
 
   @PostMapping()
-  public ClientResponseDTO addClient(@Validated @RequestBody ClientRequestDTO clientRequestDto) {
-    Client client = new Client(
-      clientRequestDto.getName(),
-      clientRequestDto.getEmail(),
-      clientRequestDto.getNumberPhone()
-    );
+  @ResponseStatus(HttpStatus.CREATED)
+  public ClientResponseDTO addClient(@Validated @RequestBody ClientRequestDTO clientRequestDTO) {
+    Client client = ClientDtoConverter.convertToEntity(clientRequestDTO);
     Client addedClient = service.addClient(client);
     return ClientDtoConverter.convertToResponseDTO(addedClient);
   }
@@ -64,7 +64,8 @@ public class ClientController {
   }
 
   @DeleteMapping("/{id}")
-  public void deleteClient(@PathVariable Long id) {
+  public ResponseEntity<Void> deleteClient(@PathVariable Long id) {
     service.deleteClient(id);
+    return ResponseEntity.noContent().build();
   }
 }

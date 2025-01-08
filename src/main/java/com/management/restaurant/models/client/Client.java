@@ -45,4 +45,12 @@ public class Client {
   public Client(Long clientId) {
     this.id = clientId;
   }
+
+  public Client(Long id, String name, String email, String numberPhone, Boolean isFrecuent) {
+    this.id = id;
+    this.name = name;
+    this.email = email;
+    this.numberPhone = numberPhone;
+    this.isFrecuent = isFrecuent;
+  }
 }
