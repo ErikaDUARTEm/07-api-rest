@@ -10,7 +10,8 @@ import java.util.List;
 
 @Getter
 @Setter
-@Component public class ObserverManager<T> implements IObservable<T> {
+@Component
+public class ObserverManager<T> implements IObservable<T> {
   private final List<IObserver<T>> IObservers = new ArrayList<>();
 
   @Override

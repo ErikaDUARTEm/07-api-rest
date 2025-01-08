@@ -1,6 +1,5 @@
 package com.management.restaurant.DTO.ordens;
 
-import com.management.restaurant.models.restaurant.Dish;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
