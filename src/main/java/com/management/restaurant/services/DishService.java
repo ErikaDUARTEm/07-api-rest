@@ -29,6 +29,7 @@ public class DishService implements IObserver<Dish> {
   public List<Dish> getAllDish(){
       return repository.findAllDishes();
   }
+
   public Dish createDish(DishRequestDTO dishRequestDTO) {
     Dish newDish = new Dish();
     newDish.setName(dishRequestDTO.getName());
