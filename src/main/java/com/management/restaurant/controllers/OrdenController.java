@@ -6,6 +6,7 @@ import com.management.restaurant.DTO.ordens.OrdenResponseDTO;
 import com.management.restaurant.enums.StatusOrden;
 import com.management.restaurant.services.OrdenService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -52,9 +54,11 @@ public class OrdenController {
   }
 
   @DeleteMapping("/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteOrden(@PathVariable Long id) {
     ordenService.deleteOrden(id);
   }
+
   @PutMapping("/{id}/{newStatus}")
   public ResponseEntity<OrdenResponseDTO> changeStateOrder(@PathVariable Long id, @PathVariable String newStatus){
     StatusOrden status = StatusOrden.valueOf(newStatus.toUpperCase());
