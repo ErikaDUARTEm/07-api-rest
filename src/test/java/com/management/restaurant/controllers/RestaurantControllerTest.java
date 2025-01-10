@@ -1,10 +1,8 @@
 package com.management.restaurant.controllers;
 
-import com.management.restaurant.DTO.ordens.OrdenRequestDTO;
 import com.management.restaurant.DTO.restaurant.RestaurantRequestDTO;
 import com.management.restaurant.DTO.restaurant.RestaurantResponseDTO;
 import com.management.restaurant.models.restaurant.Restaurant;
-import com.management.restaurant.services.OrdenService;
 import com.management.restaurant.services.RestaurantService;
 import com.management.restaurant.utils.RestaurantDtoConverter;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.time.LocalTime;
@@ -55,6 +54,16 @@ class RestaurantControllerTest {
     restaurantResponseDTO.setClosingHours(LocalTime.of(22, 0));
     return restaurantResponseDTO;
   }
+  private Restaurant createRestaurantMock() {
+    Restaurant restaurant = new Restaurant();
+    restaurant.setId(1L);
+    restaurant.setName("El sazon");
+    restaurant.setAddress("centro");
+    restaurant.setPhoneNumber("238654786");
+    restaurant.setOpeningHours(LocalTime.of(9, 0));
+    restaurant.setClosingHours(LocalTime.of(22, 0));
+    return restaurant;
+  }
   @Test
   @DisplayName("Crear restaurante")
   void createRestaurant() {
@@ -62,7 +71,6 @@ class RestaurantControllerTest {
     Restaurant restaurant = RestaurantDtoConverter.convertToEntity(restaurantRequestDTO);
     restaurant.setId(1L);
     RestaurantResponseDTO restaurantResponseDTO = createRestaurantResponseDTO();
-
 
     when(restaurantService.addRestaurant(any(Restaurant.class))).thenReturn(restaurant);
 
@@ -88,10 +96,13 @@ class RestaurantControllerTest {
   @Test
   @DisplayName("Obtener restaurant con menu por id")
   void getRestaurantWithMenu() {
+    Restaurant restaurant = createRestaurantMock();
     RestaurantResponseDTO restaurantResponseDTO = createRestaurantResponseDTO();
-    when(restaurantService.getRestaurantWithMenu(anyLong())).thenReturn(restaurantResponseDTO);
 
-    webTestClient.get() .uri("/api/restaurante/{restaurantId}", 1L)
+    when(restaurantService.getRestaurantWithMenu(anyLong())).thenReturn(restaurant);
+
+    webTestClient.get()
+      .uri("/api/restaurante/{restaurantId}", 1L)
       .exchange()
       .expectStatus().isOk()
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -139,5 +150,15 @@ class RestaurantControllerTest {
       .expectBody(String.class)
       .isEqualTo("Error al eliminar el restaurante.");
     verify(restaurantService).deleteRestaurant(anyLong());
+  }
+  @Test
+  @DisplayName("Obtener restaurante con menu, No encontrado")
+  void getRestaurantWithMenu_NotFound() {
+    when(restaurantService.getRestaurantWithMenu(anyLong())).thenReturn(null);
+
+    webTestClient.get() .uri("/api/restaurante/{restaurantId}", 1L)
+      .exchange()
+      .expectStatus().isNotFound();
+    verify(restaurantService).getRestaurantWithMenu(anyLong());
   }
 }
