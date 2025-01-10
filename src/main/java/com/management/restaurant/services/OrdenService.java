@@ -61,9 +61,7 @@ public class OrdenService {
 
     double priceTotal = calculateTotalPrice(items);
     clientService.updateObserver(client);
-    if (client.getIsFrecuent()) {
-      priceTotal = applyDiscount(priceTotal, 2.38);
-    }
+
     Orden orden = createAndSaveOrden(ordenRequestDTO, dateOrder, statusOrder, client, items,priceTotal);
     clientService.notifyClientObservers(orden.getClient());
     items.forEach(item ->{
@@ -78,7 +76,11 @@ public class OrdenService {
       }
     });
     priceTotal = calculateTotalPrice(items);
+    if (client.getIsFrecuent()) {
+      priceTotal = applyDiscount(priceTotal, 2.38);
+    }
     orden.setPriceTotal(priceTotal);
+    ordenRepository.save(orden);
     return OrdenDtoConverter.convertToResponseDTO(orden);
   }
 
