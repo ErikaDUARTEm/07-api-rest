@@ -40,6 +40,7 @@ public class ClientService implements IObserver<Client> {
   public Optional<Client> showClientById(Long id){
     return clientRepository.findById(id);
   }
+
   public List<Client> listClient(){
     assert clientRepository != null;
     return clientRepository.findAll();

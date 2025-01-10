@@ -37,8 +37,13 @@ public class RestaurantController {
 
   @GetMapping("/{restaurantId}")
   public ResponseEntity<RestaurantResponseDTO> getRestaurantWithMenu(@PathVariable Long restaurantId) {
-    RestaurantResponseDTO restaurantWithMenu = restaurantService.getRestaurantWithMenu(restaurantId);
-    return ResponseEntity.ok(restaurantWithMenu);
+    Restaurant restaurant = restaurantService.getRestaurantWithMenu(restaurantId);
+    if(restaurant == null){
+      return ResponseEntity.notFound().build();
+    }else {
+      RestaurantResponseDTO restaurantWithMenu = RestaurantDtoConverter.convertToResponseDTO(restaurant);
+      return ResponseEntity.ok(restaurantWithMenu);
+    }
   }
   @DeleteMapping("/{id}")
   public ResponseEntity<String>deleteRestaurant(@PathVariable Long id) {

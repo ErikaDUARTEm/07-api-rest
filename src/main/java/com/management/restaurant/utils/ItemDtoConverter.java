@@ -37,10 +37,6 @@ public class ItemDtoConverter {
     item.setQuantity(itemRequestDTO.getQuantity());
     return item;
   }
-  public static List<ItemResponseDTO> convertToResponseDTOList(List<Item> items) {
-    return items.stream()
-      .map(ItemDtoConverter::convertToResponseDTO)
-      .collect(Collectors.toList());
-  }
+
 
 }

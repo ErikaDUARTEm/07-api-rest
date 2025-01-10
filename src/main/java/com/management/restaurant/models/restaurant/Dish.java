@@ -35,4 +35,11 @@ public class Dish {
     this.price = price;
     this.popular = popular;
   }
+
+  public Dish(String name, Double price, Boolean popular, MenuRestaurant menuRestaurant) {
+    this.name = name;
+    this.price = price;
+    this.popular = popular;
+    this.menuRestaurant = menuRestaurant;
+  }
 }

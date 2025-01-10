@@ -1,9 +1,7 @@
 package com.management.restaurant.services;
 
-import com.management.restaurant.DTO.restaurant.RestaurantResponseDTO;
 import com.management.restaurant.models.restaurant.Restaurant;
 import com.management.restaurant.repositories.RestaurantRepository;
-import com.management.restaurant.utils.RestaurantDtoConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
@@ -20,15 +18,13 @@ public class RestaurantService {
   public Restaurant addRestaurant(Restaurant restaurant){
    return repository.save(restaurant);
   }
-  public RestaurantResponseDTO getRestaurantWithMenu(Long restaurantId) {
+
+  public Restaurant getRestaurantWithMenu(Long restaurantId) {
     Optional<Restaurant> optionalRestaurant = repository.findMenuByRestaurant(restaurantId);
     if (optionalRestaurant.isPresent()) {
-      Restaurant restaurant = optionalRestaurant.get();
-      return RestaurantDtoConverter.convertToResponseDTO(restaurant);
+     return optionalRestaurant.get();
     } else {
-      return repository.findById(restaurantId)
-        .map(RestaurantDtoConverter::convertToResponseDTO)
-        .orElse(null);
+      return repository.findById(restaurantId).orElse(null);
     }
   }
 

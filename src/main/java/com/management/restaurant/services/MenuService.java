@@ -37,7 +37,7 @@ public class MenuService {
       .orElseThrow(() -> new IllegalArgumentException("Restaurante no encontrado"));
     Optional<MenuRestaurant> existingMenu = menuRepository.findByRestaurant_Id(restaurant.getId());
     if (existingMenu.isPresent()) {
-      throw new IllegalArgumentException("El restaurante ya tiene un menú asociado.");
+      throw new IllegalArgumentException("El restaurante ya tiene un menu asociado.");
     }
     MenuRestaurant menu = MenuDtoConverter.convertToEntity(menuRequestDTO, restaurant);
     return menuRepository.save(menu);
@@ -45,7 +45,7 @@ public class MenuService {
 
   public MenuRestaurant findMenuByRestaurantId(Long restaurantId) {
     return menuRepository.findByRestaurant_Id(restaurantId)
-      .orElseThrow(() -> new RuntimeException("Menú no encontrado para el restaurante con ID: " + restaurantId));
+      .orElseThrow(() -> new RuntimeException("Menu no encontrado para el restaurante con ID: " + restaurantId));
   }
 
   @Transactional
@@ -81,7 +81,7 @@ public class MenuService {
       menu.setRestaurant(null);
       menuRepository.delete(menu);
     } else {
-      throw new EntityNotFoundException("Menu not found for restaurant with id " + restaurantId);
+      throw new EntityNotFoundException("Menu no encontrado con id restaurante: " + restaurantId);
     }
   }
 }

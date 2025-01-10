@@ -38,7 +38,7 @@ public class OrdenService {
   private final Map<StatusOrden, IStatusOrdenStrategy> statusStrategy;
 
   @Autowired
-  public OrdenService(OrdenRepository ordenRepository, IOrdenFactory IOrdenFactory, ClientRepository clientRepository, DishRepository dishRepository, ClientService clientService, DishService dishService) {
+  public OrdenService(OrdenRepository ordenRepository, IOrdenFactory IOrdenFactory, ClientRepository clientRepository, ClientService clientService, DishService dishService) {
     this.ordenRepository = ordenRepository;
     this.IOrdenFactory = IOrdenFactory;
     this.clientRepository = clientRepository;
@@ -82,12 +82,12 @@ public class OrdenService {
     return OrdenDtoConverter.convertToResponseDTO(orden);
   }
 
-  private Client findClientById(Long clientId) {
+  public Client findClientById(Long clientId) {
     return clientRepository.findById(clientId)
       .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
   }
 
-  private List<Item> validateAndConvertItems(List<ItemRequestDTO> items) {
+  public List<Item> validateAndConvertItems(List<ItemRequestDTO> items) {
       if (items == null || items.isEmpty()) {
         throw new IllegalArgumentException("El pedido debe tener al menos un item.");
       }
@@ -95,13 +95,13 @@ public class OrdenService {
         .map(this::convertAndValidateItem)
         .collect(Collectors.toList());
   }
-  private Item convertAndValidateItem(ItemRequestDTO itemDTO) {
+  public Item convertAndValidateItem(ItemRequestDTO itemDTO) {
     Dish dish = findDishByName(itemDTO.getName());
     Item item = ItemDtoConverter.convertToEntity(itemDTO);
     item.setDish(dish);
     return item;
   }
-  private Dish findDishByName(String name) {
+  public Dish findDishByName(String name) {
     Dish dish = dishService.findDishByName(name);
     if (dish == null) {
       throw new RuntimeException("El plato con nombre " + name + " no existe");
@@ -109,23 +109,23 @@ public class OrdenService {
     return dish;
   }
 
-  private Orden createAndSaveOrden(OrdenRequestDTO ordenRequestDTO, LocalDateTime dateOrder, StatusOrden statusOrder, Client client, List<Item> items, Double priceTotal) {
+  public Orden createAndSaveOrden(OrdenRequestDTO ordenRequestDTO, LocalDateTime dateOrder, StatusOrden statusOrder, Client client, List<Item> items, Double priceTotal) {
     Orden orden = IOrdenFactory.createOrden(ordenRequestDTO.getPriceTotal(), dateOrder, statusOrder, client, items);
     orden.setPriceTotal(priceTotal);
     items.forEach(item -> setItemOrdenAndDish(item, orden));
     return ordenRepository.save(orden);
   }
-  private void setItemOrdenAndDish(Item item, Orden orden) {
+  public void setItemOrdenAndDish(Item item, Orden orden) {
     item.setOrden(orden);
     item.setDish(findDishByName(item.getName()));
   }
-  private Double calculateTotalPrice(List<Item> items) {
+  public Double calculateTotalPrice(List<Item> items) {
     return items.stream()
       .mapToDouble(item -> item.getPrice() * item.getQuantity())
       .sum();
   }
 
-  private Double applyDiscount(Double priceTotal, Double discountPercentage) {
+  public Double applyDiscount(Double priceTotal, Double discountPercentage) {
     return priceTotal * ((100 - discountPercentage) / 100);
   }
 
@@ -164,7 +164,7 @@ public class OrdenService {
   public void deleteOrden(Long id) {
     ordenRepository.deleteById(id);
   }
-  private void notifyDishObserversForItems(List<Item> items) {
+  public void notifyDishObserversForItems(List<Item> items) {
     items.forEach(item -> {
       Dish dish = item.getDish();
       if (dish != null) {
