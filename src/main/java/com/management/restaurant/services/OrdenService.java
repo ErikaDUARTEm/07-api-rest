@@ -10,7 +10,6 @@ import com.management.restaurant.models.order.Item;
 import com.management.restaurant.models.order.Orden;
 import com.management.restaurant.models.restaurant.Dish;
 import com.management.restaurant.repositories.ClientRepository;
-import com.management.restaurant.repositories.DishRepository;
 import com.management.restaurant.repositories.OrdenRepository;
 import com.management.restaurant.strategy.IStatusOrdenStrategy;
 import com.management.restaurant.strategy.StateInPreparation;
@@ -54,36 +53,37 @@ public class OrdenService {
   }
 
   public OrdenResponseDTO createOrden(OrdenRequestDTO ordenRequestDTO) {
-    LocalDateTime dateOrder = LocalDateTime.now();
-    StatusOrden statusOrder = StatusOrden.PENDING;
-    Client client = findClientById(ordenRequestDTO.getClientId());
-    List<Item> items = validateAndConvertItems(ordenRequestDTO.getItems());
+    try {
+      LocalDateTime dateOrder = LocalDateTime.now();
+      StatusOrden statusOrder = StatusOrden.PENDING;
+      Client client = findClientById(ordenRequestDTO.getClientId());
+      List<Item> items = validateAndConvertItems(ordenRequestDTO.getItems());
 
-    double priceTotal = calculateTotalPrice(items);
-    clientService.updateObserver(client);
+      double priceTotal = calculateTotalPrice(items);
+      clientService.updateObserver(client);
 
-    Orden orden = createAndSaveOrden(ordenRequestDTO, dateOrder, statusOrder, client, items,priceTotal);
-    clientService.notifyClientObservers(orden.getClient());
-    items.forEach(item ->{
-      Dish dish = item.getDish();
-      if(dish != null){
-        notifyDishObserversForItems(items);
-        dishService.updateObserver(dish);
-        item.setDish(dishService.findDishByName(item.getName()));
-        if(dish.getPopular()){
-          item.setPrice(dish.getPrice());
+      Orden orden = createAndSaveOrden(ordenRequestDTO, dateOrder, statusOrder, client, items, priceTotal);
+      clientService.notifyClientObservers(orden.getClient());
+      items.forEach(item -> {
+        Dish dish = dishService.findDishByNameAndRestaurantAndMenu(item.getName(), item.getRestaurantId(), item.getMenuId());
+        if (dish != null) {
+          notifyDishObserversForItems(items);
+          dishService.updateObserver(dish);
+          item.setDish(dish);
+          if (dish.getPopular()) {
+            item.setPrice(dish.getPrice());
+          }
         }
+      });
+      priceTotal = calculateTotalPrice(items);
+      if (client.getIsFrecuent()) {
+        priceTotal = applyDiscount(priceTotal, 2.38);
       }
-    });
-    priceTotal = calculateTotalPrice(items);
-    if (client.getIsFrecuent()) {
-      priceTotal = applyDiscount(priceTotal, 2.38);
-    }
-    orden.setPriceTotal(priceTotal);
-    ordenRepository.save(orden);
-    return OrdenDtoConverter.convertToResponseDTO(orden);
+      orden.setPriceTotal(priceTotal);
+      ordenRepository.save(orden);
+      return OrdenDtoConverter.convertToResponseDTO(orden);
+    }catch (Exception e) { e.printStackTrace(); throw new RuntimeException("Error al crear la orden: " + e.getMessage()); }
   }
-
   public Client findClientById(Long clientId) {
     return clientRepository.findById(clientId)
       .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
@@ -98,7 +98,10 @@ public class OrdenService {
         .collect(Collectors.toList());
   }
   public Item convertAndValidateItem(ItemRequestDTO itemDTO) {
-    Dish dish = findDishByName(itemDTO.getName());
+    Dish dish = dishService.findDishByNameAndRestaurantAndMenu(itemDTO.getName(), itemDTO.getRestaurantId(), itemDTO.getMenuId());
+    if(dish == null){
+      throw new RuntimeException("El plato con nombre " + itemDTO.getName() + " no existe en el restaurante " + itemDTO.getRestaurantId() + " y menu " + itemDTO.getMenuId());
+    }
     Item item = ItemDtoConverter.convertToEntity(itemDTO);
     item.setDish(dish);
     return item;
@@ -112,6 +115,10 @@ public class OrdenService {
   }
 
   public Orden createAndSaveOrden(OrdenRequestDTO ordenRequestDTO, LocalDateTime dateOrder, StatusOrden statusOrder, Client client, List<Item> items, Double priceTotal) {
+    List<Orden> existingOrders = ordenRepository.findByClientAndDateOrder(client.getId(), dateOrder);
+    if (!existingOrders.isEmpty()) {
+      throw new RuntimeException("La orden ya existe.");
+    }
     Orden orden = IOrdenFactory.createOrden(ordenRequestDTO.getPriceTotal(), dateOrder, statusOrder, client, items);
     orden.setPriceTotal(priceTotal);
     items.forEach(item -> setItemOrdenAndDish(item, orden));
@@ -119,7 +126,7 @@ public class OrdenService {
   }
   public void setItemOrdenAndDish(Item item, Orden orden) {
     item.setOrden(orden);
-    item.setDish(findDishByName(item.getName()));
+    item.setDish(dishService.findDishByNameAndRestaurantAndMenu(item.getName(), item.getRestaurantId(), item.getMenuId()));
   }
   public Double calculateTotalPrice(List<Item> items) {
     return items.stream()
@@ -149,11 +156,22 @@ public class OrdenService {
   public OrdenResponseDTO updateOrden(Long id, OrdenRequestDTO ordenRequestDTO) {
     Orden orden = ordenRepository.findById(id)
       .orElseThrow(() -> new RuntimeException("Orden no encontrada"));
+
     Client client = clientRepository.findById(ordenRequestDTO.getClientId())
       .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
     if (ordenRequestDTO.getItems() != null && !ordenRequestDTO.getItems().isEmpty()) {
       List<Item> items = validateAndConvertItems(ordenRequestDTO.getItems());
+
+      items.forEach(item -> {
+        Dish dish = dishService.findDishByNameAndRestaurantAndMenu(item.getName(), item.getRestaurantId(), item.getMenuId());
+        if (dish != null) {
+          item.setDish(dish);
+          if (dish.getPopular()) {
+            item.setPrice(dish.getPrice());
+          }
+        }
+      });
       orden.setItems(items);
       orden.setPriceTotal(calculateTotalPrice(items));
     }

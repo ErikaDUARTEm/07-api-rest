@@ -17,14 +17,20 @@ public class ItemRequestDTO {
 
   @NotNull
   private Integer quantity;
+  @NotNull
+  private Long restaurantId;
+  @NotNull
+  private Long menuId;
 
   @NotNull
   private Long ordenId;
 
-  public ItemRequestDTO(String name, Double price, Integer quantity) {
+
+  public ItemRequestDTO(String name, Double price, Integer quantity, Long restaurantId, Long menuId) {
     this.name = name;
     this.price = price;
     this.quantity = quantity;
-
+    this.restaurantId = restaurantId;
+    this.menuId = menuId;
   }
 }

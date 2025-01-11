@@ -23,7 +23,6 @@ public class ItemDtoConverter {
     return itemResponseDTO;
   }
 
-
   public static List<Item> convertToEntityList(List<ItemRequestDTO> itemRequestDTOs) {
     return itemRequestDTOs.stream()
       .map(ItemDtoConverter::convertToEntity)
@@ -35,6 +34,8 @@ public class ItemDtoConverter {
     item.setName(itemRequestDTO.getName());
     item.setPrice(itemRequestDTO.getPrice());
     item.setQuantity(itemRequestDTO.getQuantity());
+    item.setRestaurantId(itemRequestDTO.getRestaurantId());
+    item.setMenuId(itemRequestDTO.getMenuId());
     return item;
   }
 

@@ -22,6 +22,8 @@ public class Item {
   private String name;
   private Integer quantity;
   private Double price;
+  private Long restaurantId;
+  private Long menuId;
   @ManyToOne
   @JoinColumn(name = "orden_id", nullable = false)
   private Orden orden;
@@ -35,5 +37,6 @@ public class Item {
     this.price = price;
     this.quantity = quantity;
     this.orden = orden;
+
   }
 }

@@ -72,8 +72,11 @@ public class DishService implements IObserver<Dish> {
     repository.deleteById(dish.getId());
   }
 
-  public Dish findDishByName(String name) {
+  public Dish findDishByName(String name){
     return repository.findByName(name);
+  }
+  public Dish findDishByNameAndRestaurantAndMenu(String name, Long restaurantId, Long menuId){
+    return repository.findByNameAndMenuRestaurantRestaurantIdAndMenuRestaurantMenuId(name, restaurantId, menuId);
   }
   public void addDishObserver() {
     observerManager.addObserver(this);

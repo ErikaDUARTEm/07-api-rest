@@ -7,6 +7,7 @@ import com.management.restaurant.models.client.Client;
 import com.management.restaurant.models.order.Item;
 import com.management.restaurant.models.order.Orden;
 import com.management.restaurant.models.restaurant.Dish;
+import com.management.restaurant.models.restaurant.MenuRestaurant;
 import com.management.restaurant.repositories.ClientRepository;
 import com.management.restaurant.repositories.DishRepository;
 import com.management.restaurant.repositories.OrdenRepository;
@@ -17,7 +18,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -29,14 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyDouble;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -69,7 +62,8 @@ class OrdenServiceTest {
       MockitoAnnotations.openMocks(this);
       ordenRequestDTO = new OrdenRequestDTO();
       ordenRequestDTO.setClientId(1L);
-      ordenRequestDTO.setItems(List.of(new ItemRequestDTO("Dish 1", 20.0, 2)));
+      ordenRequestDTO.setItems(List.of(new ItemRequestDTO("Dish 1", 20.0, 2, 1L, 2L)));
+
       client = new Client();
       client.setId(1L);
       client.setIsFrecuent(true);
@@ -88,6 +82,8 @@ class OrdenServiceTest {
       orden.setClient(client);
       orden.setItems(Collections.singletonList(item));
       orden.setPriceTotal(40.0);
+      item.setRestaurantId(1L);
+      item.setMenuId(2L);
     }
 
     @Test
@@ -113,7 +109,7 @@ class OrdenServiceTest {
   }
   @Test
   @DisplayName("Caso negativo no devuelve las ordenes")
-  void getAllOrdenes_Exception() {
+  void getAllOrdenesException() {
       when(ordenRepository.findAll()).thenThrow(new RuntimeException("Mock Exception"));
        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
          ordenService.getAllOrdenes();
@@ -221,15 +217,23 @@ class OrdenServiceTest {
       mockDish.setName("Dish 1");
       mockDish.setPrice(20.0);
 
+    MenuRestaurant mockMenuRestaurant = new MenuRestaurant();
+    mockMenuRestaurant.setIdMenu(1L);
+    mockDish.setMenuRestaurant(mockMenuRestaurant);
+
       Item item = new Item();
       item.setName("Dish 1");
-
-      when(dishService.findDishByName(any(String.class))).thenReturn(mockDish);
+      item.setRestaurantId(1L);
+      item.setMenuId(1L);
+      when(dishService.findDishByNameAndRestaurantAndMenu(item.getName(), item.getRestaurantId(), item.getMenuId())).thenReturn(mockDish);
       ordenService.setItemOrdenAndDish(item, orden);
 
       assertEquals(orden, item.getOrden());
       assertEquals(mockDish, item.getDish());
-      verify(dishService, times(1)).findDishByName("Dish 1");
+      assertEquals("Dish 1", mockDish.getName());
+      assertEquals(1L, item.getRestaurantId());
+      assertEquals(1L, item.getDish().getMenuRestaurant().getIdMenu());
+      verify(dishService, times(1)).findDishByNameAndRestaurantAndMenu("Dish 1", 1L, 1L);
     }
   @Test
   @DisplayName("Calcula el precio total")
@@ -256,11 +260,11 @@ class OrdenServiceTest {
   @Test
   @DisplayName("valida items")
   void convertAndValidateItem() {
-    ItemRequestDTO itemRequestDTO = new ItemRequestDTO("Dish 1", 20.0, 2);
-    when(dishService.findDishByName(any(String.class))).thenReturn(dish);
+    ItemRequestDTO itemRequestDTO = new ItemRequestDTO("Dish 1", 20.0, 2, 1L, 2L);
+    when(dishService.findDishByNameAndRestaurantAndMenu("Dish 1", 1L, 2L)).thenReturn(dish);
     Item item = ordenService.convertAndValidateItem(itemRequestDTO);
     assertEquals(dish, item.getDish());
-    verify(dishService, times(1)).findDishByName("Dish 1");
+    verify(dishService, times(1)).findDishByNameAndRestaurantAndMenu("Dish 1", 1L, 2L);
     }
 
   @Test
@@ -277,14 +281,14 @@ class OrdenServiceTest {
   @Test
   @DisplayName("Valida que la lista de item")
   void validateAndConvertItemsValidList() {
-      ItemRequestDTO itemRequestDTO = new ItemRequestDTO("Dish 1", 20.0, 2);
+      ItemRequestDTO itemRequestDTO = new ItemRequestDTO("Dish 1", 20.0, 2, 1L, 2L);
       List<ItemRequestDTO> itemRequestDTOList = Collections.singletonList(itemRequestDTO);
-      when(dishService.findDishByName(any(String.class))).thenReturn(dish);
+    when(dishService.findDishByNameAndRestaurantAndMenu(any(String.class), any(Long.class), any(Long.class))).thenReturn(dish);
       List<Item> items = ordenService.validateAndConvertItems(itemRequestDTOList);
       assertNotNull(items);
       assertEquals(1, items.size());
       Item item = items.get(0); assertEquals(dish, item.getDish());
-      verify(dishService, times(1)).findDishByName("Dish 1");
+    verify(dishService, times(1)).findDishByNameAndRestaurantAndMenu("Dish 1", 1L, 2L);
     }
   @Test
   @DisplayName("Actualizar orden")
@@ -292,17 +296,22 @@ class OrdenServiceTest {
     Long ordenId = 1L;
     when(ordenRepository.findById(ordenId)).thenReturn(Optional.of(orden));
     when(clientRepository.findById(ordenRequestDTO.getClientId())).thenReturn(Optional.of(client));
-    when(dishService.findDishByName("Dish 1")).thenReturn(dish);
+    when(dishService.findDishByNameAndRestaurantAndMenu("Dish 1", 1L, 2L)).thenReturn(dish);
     List<Item> items = Collections.singletonList(item);
+    items.forEach(i -> {
+      i.setRestaurantId(1L);
+      i.setMenuId(2L);
+    });
     orden.setItems(items);
     orden.setPriceTotal(40.0);
     when(ordenRepository.save(any(Orden.class))).thenReturn(orden);
+
     OrdenResponseDTO response = ordenService.updateOrden(ordenId, ordenRequestDTO);
     assertNotNull(response);
     assertEquals(40.0, response.getPriceTotal());
     verify(ordenRepository, times(1)).findById(ordenId);
     verify(clientRepository, times(1)).findById(ordenRequestDTO.getClientId());
-    verify(dishService, times(1)).findDishByName("Dish 1");
+    verify(dishService, times(2)).findDishByNameAndRestaurantAndMenu("Dish 1", 1L, 2L);
     verify(ordenRepository, times(1)).save(orden);
     }
 
