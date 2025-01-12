@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -45,8 +46,10 @@ public class Orden {
   @ManyToOne
   @JoinColumn(name = "client_id", nullable = false)
   private Client client;
+
   @OneToMany(mappedBy = "orden", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<Item> items;
+  private List<Item> items = new ArrayList<>();
+
   @Transient
   private IStatusOrdenStrategy statusOrdenStrategy;
 
@@ -59,6 +62,17 @@ public class Orden {
     this.items = items;
     this.statusOrdenStrategy = null;
   }
+  public void setItems(List<Item> items) {
+    if (this.items != null) {
+      this.items.forEach(item -> item.setOrden(null));
+      this.items.clear();
+    }
+    if (items != null) {
+      items.forEach(item -> item.setOrden(this));
+      this.items.addAll(items);
+     }
+    }
+
   public void handleStatus() {
     if (this.statusOrdenStrategy != null)
     { this.statusOrdenStrategy.handle(this);

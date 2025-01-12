@@ -64,36 +64,30 @@ public class OrdenService {
 
       Orden orden = createAndSaveOrden(ordenRequestDTO, dateOrder, statusOrder, client, items, priceTotal);
       clientService.notifyClientObservers(orden.getClient());
-      items.forEach(item -> {
-        Dish dish = dishService.findDishByNameAndRestaurantAndMenu(item.getName(), item.getRestaurantId(), item.getMenuId());
-        if (dish != null) {
-          notifyDishObserversForItems(items);
-          dishService.updateObserver(dish);
-          item.setDish(dish);
-          if (dish.getPopular()) {
-            item.setPrice(dish.getPrice());
-          }
-        }
-      });
+
+      adjustItemPrices(items);
       priceTotal = calculateTotalPrice(items);
       if (client.getIsFrecuent()) {
         priceTotal = applyDiscount(priceTotal, 2.38);
       }
+      orden.setItems(items);
       orden.setPriceTotal(priceTotal);
       ordenRepository.save(orden);
       return OrdenDtoConverter.convertToResponseDTO(orden);
-    }catch (Exception e) { e.printStackTrace(); throw new RuntimeException("Error al crear la orden: " + e.getMessage()); }
+    }catch (Exception e) { e.printStackTrace();
+      throw new RuntimeException("Error al crear la orden: " + e.getMessage());
+    }
   }
   public Client findClientById(Long clientId) {
     return clientRepository.findById(clientId)
       .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
   }
 
-  public List<Item> validateAndConvertItems(List<ItemRequestDTO> items) {
-      if (items == null || items.isEmpty()) {
+  public List<Item> validateAndConvertItems(List<ItemRequestDTO> itemRequestDTO) {
+      if (itemRequestDTO == null || itemRequestDTO.isEmpty()) {
         throw new IllegalArgumentException("El pedido debe tener al menos un item.");
       }
-      return items.stream()
+      return itemRequestDTO.stream()
         .map(this::convertAndValidateItem)
         .collect(Collectors.toList());
   }
@@ -163,15 +157,8 @@ public class OrdenService {
     if (ordenRequestDTO.getItems() != null && !ordenRequestDTO.getItems().isEmpty()) {
       List<Item> items = validateAndConvertItems(ordenRequestDTO.getItems());
 
-      items.forEach(item -> {
-        Dish dish = dishService.findDishByNameAndRestaurantAndMenu(item.getName(), item.getRestaurantId(), item.getMenuId());
-        if (dish != null) {
-          item.setDish(dish);
-          if (dish.getPopular()) {
-            item.setPrice(dish.getPrice());
-          }
-        }
-      });
+      adjustItemPrices(items);
+      orden.getItems().clear();
       orden.setItems(items);
       orden.setPriceTotal(calculateTotalPrice(items));
     }
@@ -202,5 +189,16 @@ public class OrdenService {
     orden.handleStatus();
     ordenRepository.save(orden);
   }
-
+  private void adjustItemPrices(List<Item> items) {
+    items.forEach(item -> {
+      Dish dish = dishService.findDishByNameAndRestaurantAndMenu(item.getName(), item.getRestaurantId(), item.getMenuId());
+      if (dish != null) {
+        notifyDishObserversForItems(items);
+        item.setDish(dish);
+        if (dish.getPopular()) {
+          item.setPrice(dish.getPrice());
+        }
+      }
+    });
+  }
 }
