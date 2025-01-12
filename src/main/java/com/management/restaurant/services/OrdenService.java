@@ -66,6 +66,7 @@ public class OrdenService {
       clientService.notifyClientObservers(orden.getClient());
 
       adjustItemPrices(items);
+
       priceTotal = calculateTotalPrice(items);
       if (client.getIsFrecuent()) {
         priceTotal = applyDiscount(priceTotal, 2.38);
@@ -98,6 +99,7 @@ public class OrdenService {
     }
     Item item = ItemDtoConverter.convertToEntity(itemDTO);
     item.setDish(dish);
+    item.setQuantity(itemDTO.getQuantity());
     return item;
   }
   public Dish findDishByName(String name) {
@@ -121,6 +123,7 @@ public class OrdenService {
   public void setItemOrdenAndDish(Item item, Orden orden) {
     item.setOrden(orden);
     item.setDish(dishService.findDishByNameAndRestaurantAndMenu(item.getName(), item.getRestaurantId(), item.getMenuId()));
+    item.setQuantity(item.getQuantity());
   }
   public Double calculateTotalPrice(List<Item> items) {
     return items.stream()
@@ -193,11 +196,12 @@ public class OrdenService {
     items.forEach(item -> {
       Dish dish = dishService.findDishByNameAndRestaurantAndMenu(item.getName(), item.getRestaurantId(), item.getMenuId());
       if (dish != null) {
+        dishService.updateObserver(dish);
         notifyDishObserversForItems(items);
         item.setDish(dish);
         if (dish.getPopular()) {
-          item.setPrice(dish.getPrice());
-        }
+          dish.setPrice(dish.getPrice());
+        }else { item.setPrice(dish.getPrice()); }
       }
     });
   }

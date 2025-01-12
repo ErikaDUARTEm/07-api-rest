@@ -4,6 +4,7 @@ import com.management.restaurant.DTO.restaurant.DishRequestDTO;
 import com.management.restaurant.models.restaurant.Dish;
 import com.management.restaurant.models.restaurant.MenuRestaurant;
 import com.management.restaurant.repositories.DishRepository;
+import com.management.restaurant.repositories.ItemRepository;
 import com.management.restaurant.repositories.MenuRepository;
 import com.management.restaurant.services.interfaces.IObserver;
 import com.management.restaurant.services.observer.ObserverManager;
@@ -17,13 +18,14 @@ public class DishService implements IObserver<Dish> {
   private final ObserverManager<Dish> observerManager;
   private final DishRepository repository;
   private final MenuRepository menuRepository;
-
+  private ItemRepository itemRepository;
 
   @Autowired
-  public DishService(ObserverManager<Dish> observerManager, DishRepository repository, MenuRepository menuRepository) {
+  public DishService(ObserverManager<Dish> observerManager, DishRepository repository, MenuRepository menuRepository, ItemRepository itemRepository) {
     this.observerManager = observerManager;
     this.repository = repository;
     this.menuRepository = menuRepository;
+    this.itemRepository = itemRepository;
     addDishObserver();
   }
   public List<Dish> getAllDish(){
@@ -92,7 +94,7 @@ public class DishService implements IObserver<Dish> {
 
   @Override
   public void updateObserver(Dish dish) {
-    Long purchaseCount = repository.countPopularDishes(dish.getId());
+    Long purchaseCount = itemRepository.countPopularDishes(dish.getId());
     if (purchaseCount > 100 && !dish.getPopular()) {
       dish.setPopular(true);
       dish.setPrice(calculateNewPriceWithIncrease(dish.getPrice()));
