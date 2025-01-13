@@ -327,14 +327,19 @@ class OrdenServiceTest {
       })
       .collect(Collectors.toList());
     orden.setItems(items);
-    orden.setPriceTotal(40.0);
+    Double initialPriceTotal = 40.0;
+    orden.setPriceTotal(initialPriceTotal);
     when(ordenRepository.save(any(Orden.class))).thenReturn(orden);
 
     items.forEach(item -> when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item)));
 
+    Double expectedPriceTotal = initialPriceTotal;
+    if (client.getIsFrecuent()) {
+      expectedPriceTotal = ordenService.applyDiscount(expectedPriceTotal, 2.38);
+    }
     OrdenResponseDTO response = ordenService.updateOrden(ordenId, ordenRequestDTO);
     assertNotNull(response);
-    assertEquals(40.0, response.getPriceTotal());
+    assertEquals(expectedPriceTotal, response.getPriceTotal());
 
     verify(ordenRepository, times(1)).findById(ordenId);
     verify(clientRepository, times(1)).findById(ordenRequestDTO.getClientId());

@@ -166,7 +166,11 @@ public class OrdenService {
       orden.getItems().clear();
       orden.getItems().addAll(updatedItems);
       adjustItemPrices(orden.getItems());
-      orden.setPriceTotal(calculateTotalPrice(orden.getItems()));
+      Double priceTotal = calculateTotalPrice(orden.getItems());
+      if (client.getIsFrecuent()) {
+        priceTotal = applyDiscount(priceTotal, 2.38);
+      }
+      orden.setPriceTotal(priceTotal);
     }
     orden.setStatusOrder(ordenRequestDTO.getStatusOrder());
     orden.setClient(client);
