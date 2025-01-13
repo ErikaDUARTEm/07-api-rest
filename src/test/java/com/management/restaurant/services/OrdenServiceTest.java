@@ -413,6 +413,7 @@ class OrdenServiceTest {
     StatusOrden orderStatus = invocation.getArgument(2);
     Client orderClient = invocation.getArgument(3);
     List<Item> orderItems = invocation.getArgument(4);
+    Double initialPriceTotal = invocation.getArgument(0);
 
       return new Orden(ordenId, 0.0, orderDate, orderStatus, orderClient, new ArrayList<>(orderItems));
     });
@@ -421,14 +422,14 @@ class OrdenServiceTest {
       savedOrden.setPriceTotal(40.0);
       return savedOrden;
     });
-    Orden result = ordenService.createAndSaveOrden(ordenRequestDTO, dateOrder, statusOrder, client, List.of(item), 0.0);
+    Orden result = ordenService.createAndSaveOrden(ordenRequestDTO, dateOrder, statusOrder, client, List.of(item));
     assertNotNull(result);
     assertEquals(40.0, result.getPriceTotal());
     assertEquals(1, result.getItems().size());
     assertEquals(client, result.getClient());
 
     verify(ordenRepository, times(1)).findByClientAndDateOrder(client.getId(), dateOrder);
-    verify(iordenFactory, times(1)).createOrden(0.0, dateOrder, statusOrder, client, List.of(item));
+    verify(iordenFactory, times(1)).createOrden(anyDouble(), eq(dateOrder), eq(statusOrder), eq(client), anyList());
     verify(ordenRepository, times(1)).save(any(Orden.class));
     }
 

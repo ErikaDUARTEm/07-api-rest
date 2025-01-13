@@ -62,18 +62,19 @@ public class OrdenService {
       StatusOrden statusOrder = StatusOrden.PENDING;
       Client client = findClientById(ordenRequestDTO.getClientId());
       List<Item> items = validateAndConvertItems(ordenRequestDTO.getItems());
-      Double priceTotal= 0.0;
+
       clientService.updateObserver(client);
 
-      Orden orden = createAndSaveOrden(ordenRequestDTO, dateOrder, statusOrder, client, items, priceTotal);
+      Orden orden = createAndSaveOrden(ordenRequestDTO, dateOrder, statusOrder, client, items);
       clientService.notifyClientObservers(orden.getClient());
 
       adjustItemPrices(items);
 
-      priceTotal = calculateTotalPrice(items);
+      Double priceTotal = calculateTotalPrice(items);
       if (client.getIsFrecuent()) {
         priceTotal = applyDiscount(priceTotal, 2.38);
       }
+
       orden.setPriceTotal(priceTotal);
       ordenRepository.save(orden);
       return OrdenDtoConverter.convertToResponseDTO(orden);
@@ -113,14 +114,12 @@ public class OrdenService {
     return dish;
   }
 
-  public Orden createAndSaveOrden(OrdenRequestDTO ordenRequestDTO, LocalDateTime dateOrder, StatusOrden statusOrder, Client client, List<Item> items, Double priceTotal) {
+  public Orden createAndSaveOrden(OrdenRequestDTO ordenRequestDTO, LocalDateTime dateOrder, StatusOrden statusOrder, Client client, List<Item> items) {
     List<Orden> existingOrders = ordenRepository.findByClientAndDateOrder(client.getId(), dateOrder);
     if (!existingOrders.isEmpty()) {
       throw new RuntimeException("La orden ya existe.");
     }
-    if (priceTotal == null) {
-      priceTotal = 0.0;
-    }
+    Double priceTotal = ordenRequestDTO.getPriceTotal() != null ? ordenRequestDTO.getPriceTotal() : 0.0;
     Orden orden = IOrdenFactory.createOrden(priceTotal, dateOrder, statusOrder, client, items);
     items.forEach(item -> setItemOrdenAndDish(item, orden));
     return ordenRepository.save(orden);
@@ -227,11 +226,11 @@ public class OrdenService {
     items.forEach(item -> {
       Dish dish = dishService.findDishByNameAndRestaurantAndMenu(item.getName(), item.getRestaurantId(), item.getMenuId());
       if (dish != null) {
-        dishService.updateObserver(dish);
         notifyDishObserversForItems(items);
+        dishService.updateObserver(dish);
         item.setDish(dish);
         if (dish.getPopular()) {
-          dish.setPrice(dish.getPrice());
+          item.setPrice(dish.getPrice());
         }else { item.setPrice(dish.getPrice());
         }
       }
