@@ -32,7 +32,7 @@ public class MenuRestaurant {
   private Restaurant restaurant;
 
   @OneToMany(mappedBy = "menuRestaurant", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<Dish> dishes = new ArrayList<>();;
+  private List<Dish> dishes = new ArrayList<>();
 
   public MenuRestaurant(Long idMenu, String description, Restaurant restaurant, List<Dish> dishes) {
     this.idMenu = idMenu;

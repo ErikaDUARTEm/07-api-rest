@@ -29,7 +29,7 @@ public class Item {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "orden_id", nullable = false)
   private Orden orden;
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "dish_id", nullable = false)
   private Dish dish;
 

@@ -7,6 +7,7 @@ import com.management.restaurant.models.restaurant.Dish;
 import com.management.restaurant.models.restaurant.MenuRestaurant;
 import com.management.restaurant.models.restaurant.Restaurant;
 import com.management.restaurant.repositories.DishRepository;
+import com.management.restaurant.repositories.ItemRepository;
 import com.management.restaurant.repositories.MenuRepository;
 import com.management.restaurant.repositories.RestaurantRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -34,6 +35,7 @@ class MenuServiceTest {
   private DishRepository dishRepository;
   private MenuRepository menuRepository;
   private RestaurantRepository restaurantRepository;
+  private ItemRepository itemRepository;
   private MenuService menuService;
   Restaurant  restaurant;
   MenuRestaurant menu;
@@ -43,8 +45,8 @@ class MenuServiceTest {
     dishRepository = mock(DishRepository.class);
     menuRepository = mock(MenuRepository.class);
     restaurantRepository = mock(RestaurantRepository.class);
-
-    menuService = new MenuService( menuRepository, dishRepository, restaurantRepository);
+    itemRepository = mock(ItemRepository.class);
+    menuService = new MenuService( menuRepository, dishRepository, restaurantRepository, itemRepository);
     restaurant = new Restaurant(1L, "Restaurante Test", "123 Main St", "555-1234", null, null, null);
     menu = new MenuRestaurant(1L, "Menu 1", restaurant, List.of());
 
