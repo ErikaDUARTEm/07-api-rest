@@ -16,7 +16,7 @@ public class RestaurantService {
     this.repository = repository;
   }
   public Restaurant addRestaurant(Restaurant restaurant){
-   return repository.save(restaurant);
+    return repository.save(restaurant);
   }
 
   public Restaurant getRestaurantWithMenu(Long restaurantId) {

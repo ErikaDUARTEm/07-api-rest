@@ -169,6 +169,20 @@ class DishServiceTest {
     assertTrue(dish.getPopular());
     assertEquals(12.99 * 1.0573, dish.getPrice(), 0.001);
     verify(dishRepository, times(1)).save(dish);
-
   }
+  @Test
+  @DisplayName("Encontrar plato por nombre, restaurante y menu")
+  void testFindDishByNameAndRestaurantAndMenu() {
+    String name = "Sopa de pollo";
+    Long restaurantId = 1L;
+    Long menuId = 1L;
+    Dish dish = new Dish(2L, name, null, 10.99, false);
+
+    when(dishRepository.findByNameAndMenuRestaurantRestaurantIdAndMenuRestaurantMenuId(name, restaurantId, menuId)).thenReturn(dish);
+    Dish foundDish = dishService.findDishByNameAndRestaurantAndMenu(name, restaurantId, menuId);
+    assertNotNull(foundDish);
+    assertEquals(dish, foundDish);
+    verify(dishRepository, times(1)).findByNameAndMenuRestaurantRestaurantIdAndMenuRestaurantMenuId(name, restaurantId, menuId);
+  }
+
 }

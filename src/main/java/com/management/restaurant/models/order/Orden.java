@@ -65,13 +65,13 @@ public class Orden {
   public void setItems(List<Item> items) {
     if (this.items != null) {
       this.items.forEach(item -> item.setOrden(null));
-      this.items.clear();
-    }
+     }
     if (items != null) {
       items.forEach(item -> item.setOrden(this));
-      this.items.addAll(items);
-     }
+      this.items = new ArrayList<>(items);
+    }else { this.items = new ArrayList<>();
     }
+  }
 
   public void handleStatus() {
     if (this.statusOrdenStrategy != null)
