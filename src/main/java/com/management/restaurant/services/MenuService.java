@@ -5,6 +5,7 @@ import com.management.restaurant.models.restaurant.Dish;
 import com.management.restaurant.models.restaurant.MenuRestaurant;
 import com.management.restaurant.models.restaurant.Restaurant;
 import com.management.restaurant.repositories.DishRepository;
+import com.management.restaurant.repositories.ItemRepository;
 import com.management.restaurant.repositories.MenuRepository;
 import com.management.restaurant.repositories.RestaurantRepository;
 import com.management.restaurant.utils.MenuDtoConverter;
@@ -24,12 +25,14 @@ public class MenuService {
   private MenuRepository menuRepository;
   private DishRepository dishRepository;
   private RestaurantRepository restaurantRepository;
+  private ItemRepository itemRepository;
 
   @Autowired
-  public MenuService(MenuRepository menuRepository, DishRepository dishRepository,RestaurantRepository restaurantRepository) {
+  public MenuService(MenuRepository menuRepository, DishRepository dishRepository, RestaurantRepository restaurantRepository, ItemRepository itemRepository) {
     this.menuRepository = menuRepository;
     this.dishRepository = dishRepository;
     this.restaurantRepository = restaurantRepository;
+    this.itemRepository = itemRepository;
   }
 
   public MenuRestaurant addMenu(MenuResquetDTO menuRequestDTO) {
@@ -75,10 +78,10 @@ public class MenuService {
     Optional<MenuRestaurant> optionalMenu = menuRepository.findByRestaurant_Id(restaurantId);
     if (optionalMenu.isPresent()) {
       MenuRestaurant menu = optionalMenu.get();
-      if (menu.getDishes() != null) {
-        menu.getDishes().forEach(dish -> dishRepository.delete(dish));
-      }
-      menu.setRestaurant(null);
+      menu.getDishes().forEach(dish -> {
+        itemRepository.deleteByDishId(dish.getId());
+      });
+      dishRepository.deleteAll(menu.getDishes());
       menuRepository.delete(menu);
     } else {
       throw new EntityNotFoundException("Menu no encontrado con id restaurante: " + restaurantId);

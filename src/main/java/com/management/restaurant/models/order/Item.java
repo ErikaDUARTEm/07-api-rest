@@ -2,6 +2,7 @@ package com.management.restaurant.models.order;
 
 import com.management.restaurant.models.restaurant.Dish;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,10 +23,13 @@ public class Item {
   private String name;
   private Integer quantity;
   private Double price;
-  @ManyToOne
+  private Long restaurantId;
+  private Long menuId;
+
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "orden_id", nullable = false)
   private Orden orden;
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "dish_id", nullable = false)
   private Dish dish;
 
@@ -35,5 +39,6 @@ public class Item {
     this.price = price;
     this.quantity = quantity;
     this.orden = orden;
+
   }
 }

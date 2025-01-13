@@ -8,6 +8,7 @@ import com.management.restaurant.models.restaurant.Dish;
 import com.management.restaurant.models.restaurant.MenuRestaurant;
 import com.management.restaurant.models.restaurant.Restaurant;
 import com.management.restaurant.repositories.DishRepository;
+import com.management.restaurant.repositories.ItemRepository;
 import com.management.restaurant.repositories.MenuRepository;
 import com.management.restaurant.services.observer.ObserverManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +40,7 @@ class DishServiceTest {
   private ObserverManager<Dish> observerManager;
   private DishService dishService;
   private DishRequestDTO dishRequestDTO;
+  private ItemRepository itemRepository;
 
   private Dish existingDish;
 
@@ -46,11 +48,12 @@ class DishServiceTest {
   @BeforeEach
   void setUp() {
     dishRepository = mock(DishRepository.class);
+    itemRepository = mock(ItemRepository.class);
     menuRepository = mock(MenuRepository.class);
     observerManager = mock(ObserverManager.class);
     menuRestaurant = mock(MenuRestaurant.class);
 
-    dishService = new DishService(observerManager, dishRepository, menuRepository);
+    dishService = new DishService(observerManager, dishRepository, menuRepository, itemRepository);
     Restaurant restaurant = new Restaurant(1L, "Restaurante Test", "123 Main St", "555-1234", LocalTime.of(9, 0), LocalTime.of(17, 0), null);
     menuRestaurant = new MenuRestaurant(1L, "Menu 1", restaurant, List.of());
     existingDish = new Dish(1L, "Pasta", null, 12.99, false);
@@ -160,12 +163,26 @@ class DishServiceTest {
   @DisplayName("Actualizar observador de plato cuando el plato pase a ser popular")
   void updateObserver() {
     Dish dish = new Dish(1L, "Pasta", null, 12.99, false);
-    when(dishRepository.countPopularDishes(dish.getId())).thenReturn(101L);
+    when(itemRepository.countPopularDishes(dish.getId())).thenReturn(101L);
     when(dishRepository.save(any(Dish.class))).thenAnswer(invocation -> invocation.getArgument(0)); dishService.updateObserver(dish);
 
     assertTrue(dish.getPopular());
     assertEquals(12.99 * 1.0573, dish.getPrice(), 0.001);
     verify(dishRepository, times(1)).save(dish);
-
   }
+  @Test
+  @DisplayName("Encontrar plato por nombre, restaurante y menu")
+  void testFindDishByNameAndRestaurantAndMenu() {
+    String name = "Sopa de pollo";
+    Long restaurantId = 1L;
+    Long menuId = 1L;
+    Dish dish = new Dish(2L, name, null, 10.99, false);
+
+    when(dishRepository.findByNameAndMenuRestaurantRestaurantIdAndMenuRestaurantMenuId(name, restaurantId, menuId)).thenReturn(dish);
+    Dish foundDish = dishService.findDishByNameAndRestaurantAndMenu(name, restaurantId, menuId);
+    assertNotNull(foundDish);
+    assertEquals(dish, foundDish);
+    verify(dishRepository, times(1)).findByNameAndMenuRestaurantRestaurantIdAndMenuRestaurantMenuId(name, restaurantId, menuId);
+  }
+
 }
