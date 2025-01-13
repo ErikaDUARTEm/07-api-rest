@@ -37,23 +37,21 @@ public class OrdenService {
   private final ClientService clientService;
   private final DishService dishService;
   private final Map<StatusOrden, IStatusOrdenStrategy> statusStrategy;
-  private final ItemRepository itemRepository;
+
 
   @Autowired
-  public OrdenService(OrdenRepository ordenRepository, IOrdenFactory IOrdenFactory, ClientRepository clientRepository, ClientService clientService, DishService dishService, ItemRepository itemRepository) {
+  public OrdenService(OrdenRepository ordenRepository, IOrdenFactory IOrdenFactory, ClientRepository clientRepository, ClientService clientService, DishService dishService) {
     this.ordenRepository = ordenRepository;
     this.IOrdenFactory = IOrdenFactory;
     this.clientRepository = clientRepository;
     this.clientService = clientService;
     this.dishService = dishService;
-    this.itemRepository = itemRepository;
 
     statusStrategy = new HashMap<>();
     statusStrategy.put(StatusOrden.IN_PREPARATION, new StateInPreparation());
     statusStrategy.put(StatusOrden.COMPLETED, new StatusCompleted());
     statusStrategy.put(StatusOrden.CANCELLED, new StatusCancelled());
     statusStrategy.put(StatusOrden.DELIVERED, new StatusDelivered());
-
   }
 
   public OrdenResponseDTO createOrden(OrdenRequestDTO ordenRequestDTO) {
@@ -161,44 +159,48 @@ public class OrdenService {
     Client client = clientRepository.findById(ordenRequestDTO.getClientId())
       .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
-    List<Item> updatedItems = new ArrayList<>();
-
     if (ordenRequestDTO.getItems() != null && !ordenRequestDTO.getItems().isEmpty()) {
       List<Item> newItems = validateAndConvertItems(ordenRequestDTO.getItems());
+      List<Item> updatedItems = processNewItems(newItems, orden);
 
-
-      for (Item newItem : newItems) {
-        boolean itemExists = false;
-        for (Item existingItem : orden.getItems()) {
-          if (newItem.getName().equals(existingItem.getName()) &&
-            newItem.getRestaurantId().equals(existingItem.getRestaurantId())
-            && newItem.getMenuId().equals(existingItem.getMenuId())) {
-
-            newItem.setId(existingItem.getId());
-            existingItem.setQuantity(newItem.getQuantity());
-            existingItem.setName(newItem.getName());
-            existingItem.setDish(newItem.getDish());
-            newItem.setPrice(existingItem.getPrice());
-            itemExists = true;
-            break;
-          }
-        }
-        if (!itemExists) {
-          newItem.setPrice(newItem.getPrice());
-        }
-        setItemOrdenAndDish(newItem, orden);
-        updatedItems.add(newItem);
-      }
       orden.getItems().clear();
       orden.getItems().addAll(updatedItems);
       adjustItemPrices(orden.getItems());
       orden.setPriceTotal(calculateTotalPrice(orden.getItems()));
     }
-
     orden.setStatusOrder(ordenRequestDTO.getStatusOrder());
     orden.setClient(client);
     Orden updatedOrden = ordenRepository.save(orden);
     return OrdenDtoConverter.convertToResponseDTO(updatedOrden);
+  }
+
+  private List<Item> processNewItems(List<Item> newItems, Orden orden) {
+    List<Item> updatedItems = new ArrayList<>();
+    for (Item newItem : newItems) {
+      if (!updateExistingItem(newItem, orden)) {
+        newItem.setPrice(newItem.getPrice());
+      }
+      setItemOrdenAndDish(newItem, orden);
+      updatedItems.add(newItem);
+    }
+    return updatedItems;
+  }
+
+  private Boolean updateExistingItem(Item newItem, Orden orden){
+    for (Item existingItem : orden.getItems()) {
+      if (newItem.getName().equals(existingItem.getName()) &&
+        newItem.getRestaurantId().equals(existingItem.getRestaurantId())
+        && newItem.getMenuId().equals(existingItem.getMenuId())) {
+
+        newItem.setId(existingItem.getId());
+        existingItem.setQuantity(newItem.getQuantity());
+        existingItem.setName(newItem.getName());
+        existingItem.setDish(newItem.getDish());
+        newItem.setPrice(existingItem.getPrice());
+        return true;
+      }
+    }
+    return false;
   }
 
   public void deleteOrden(Long id) {

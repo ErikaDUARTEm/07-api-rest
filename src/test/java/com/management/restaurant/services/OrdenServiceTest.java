@@ -92,7 +92,7 @@ class OrdenServiceTest {
       item.setMenuId(2L);
 
       orden = new Orden(1L, null, LocalDateTime.now(), StatusOrden.PENDING, client, Collections.singletonList(item));
-      ordenService = new OrdenService(ordenRepository, iordenFactory, clientRepository, clientService, dishService, itemRepository);
+      ordenService = new OrdenService(ordenRepository, iordenFactory, clientRepository, clientService, dishService);
     }
 
     @Test
