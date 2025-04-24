@@ -126,7 +126,7 @@ class OrdenControllerTest {
       .uri("/api/ordenes")
       .bodyValue(ordenRequestDTO)
       .exchange()
-      .expectStatus().isOk()
+      .expectStatus().isCreated()
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody(OrdenResponseDTO.class)
       .value(response-> assertOrdenResponseDTO(ordenResponseDTO, response));

@@ -31,11 +31,12 @@ public class OrdenController {
   public OrdenController(OrdenService ordenService) {
     this.ordenService = ordenService;
   }
+
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public ResponseEntity<OrdenResponseDTO> createOrden(@Validated @RequestBody OrdenRequestDTO ordenRequestDTO) {
     OrdenResponseDTO createdOrden = ordenService.createOrden(ordenRequestDTO);
-    return ResponseEntity.ok(createdOrden);
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdOrden);
   }
 
   @GetMapping
