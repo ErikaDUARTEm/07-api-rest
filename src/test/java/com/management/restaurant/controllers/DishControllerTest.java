@@ -1,10 +1,9 @@
 package com.management.restaurant.controllers;
 
-import com.management.restaurant.DTO.client.ClientResponseDTO;
+
 import com.management.restaurant.DTO.ordens.DishDTO;
 import com.management.restaurant.DTO.restaurant.DishRequestDTO;
 import com.management.restaurant.DTO.restaurant.DishResponseDTO;
-import com.management.restaurant.models.client.Client;
 import com.management.restaurant.models.restaurant.Dish;
 import com.management.restaurant.services.DishService;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,15 +14,15 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.List;
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class DishControllerTest {
@@ -144,7 +143,7 @@ class DishControllerTest {
     webTestClient.delete()
       .uri("/api/dish/{id}", existingDish.getId())
       .exchange()
-      .expectStatus().isOk();
+      .expectStatus().isNoContent();
 
     Mockito.verify(dishService).deleteDish(existingDish.getId());
   }
