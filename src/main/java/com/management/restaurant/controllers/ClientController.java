@@ -50,6 +50,7 @@ public class ClientController {
   }
 
   @GetMapping("/{id}")
+  @ResponseStatus(HttpStatus.OK)
   public ClientResponseDTO showClientById(@PathVariable Long id) {
     return service.showClientById(id)
       .map(ClientDtoConverter::convertToResponseDTO)
@@ -57,6 +58,7 @@ public class ClientController {
   }
 
   @PutMapping("/{id}")
+  @ResponseStatus(HttpStatus.OK)
   public ClientResponseDTO updateClient(@PathVariable Long id, @RequestBody @Validated ClientRequestDTO clientRequestDTO) {
     Client client = ClientDtoConverter.convertToEntity(clientRequestDTO);
     Client updatedClient = service.updateClient(id, client);
@@ -64,6 +66,7 @@ public class ClientController {
   }
 
   @DeleteMapping("/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
   public ResponseEntity<Void> deleteClient(@PathVariable Long id) {
     service.deleteClient(id);
     return ResponseEntity.noContent().build();

@@ -78,7 +78,7 @@ class RestaurantControllerTest {
       .uri("/api/restaurante")
       .bodyValue(restaurantRequestDTO)
       .exchange()
-      .expectStatus().isOk()
+      .expectStatus().isCreated()
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody(RestaurantResponseDTO.class)
       .value(response -> {
