@@ -74,7 +74,7 @@ class MenuControllerTest {
       .uri("/api/menu")
       .bodyValue(menuRequestDTO)
       .exchange()
-      .expectStatus().isOk()
+      .expectStatus().isCreated()
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
       .expectBody(MenuResponseDTO.class)
       .value(response ->{

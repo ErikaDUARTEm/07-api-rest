@@ -31,12 +31,14 @@ public class DishController {
     this.service = service;
   }
   @GetMapping
+  @ResponseStatus(HttpStatus.OK)
   public List<DishResponseDTO> getAllDishes() {
     return service.getAllDish().stream()
       .map(DishDtoConverter::convertToResponseDTO)
       .collect(Collectors.toList());
   }
   @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
   public ResponseEntity<DishResponseDTO> createDish(@RequestBody DishRequestDTO dishRequestDTO) {
     Dish dish = service.createDish(dishRequestDTO);
     DishResponseDTO response = DishDtoConverter.convertToResponseDTO(dish);
@@ -44,6 +46,7 @@ public class DishController {
   }
 
   @PutMapping("/{id}")
+  @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<DishResponseDTO> updateDish(@PathVariable Long id, @RequestBody DishRequestDTO dishRequest) {
     Dish dish = service.updateDish(id, dishRequest);
     DishResponseDTO response = DishDtoConverter.convertToResponseDTO(dish);

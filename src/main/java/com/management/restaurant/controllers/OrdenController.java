@@ -31,23 +31,28 @@ public class OrdenController {
   public OrdenController(OrdenService ordenService) {
     this.ordenService = ordenService;
   }
+
   @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
   public ResponseEntity<OrdenResponseDTO> createOrden(@Validated @RequestBody OrdenRequestDTO ordenRequestDTO) {
     OrdenResponseDTO createdOrden = ordenService.createOrden(ordenRequestDTO);
-    return ResponseEntity.ok(createdOrden);
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdOrden);
   }
 
   @GetMapping
+  @ResponseStatus(HttpStatus.OK)
   public List<OrdenResponseDTO> getAllOrdenes() {
     return ordenService.getAllOrdenes();
   }
 
   @GetMapping("/{id}")
+  @ResponseStatus(HttpStatus.OK)
   public OrdenResponseDTO getOrdenById(@PathVariable Long id) {
     return ordenService.getOrdenById(id);
   }
 
   @PutMapping("/{id}")
+  @ResponseStatus(HttpStatus.OK)
   public OrdenResponseDTO updateOrden(@PathVariable Long id, @Validated @RequestBody OrdenRequestDTO ordenRequestDTO) {
     return ordenService.updateOrden(id, ordenRequestDTO);
   }
@@ -59,6 +64,7 @@ public class OrdenController {
   }
 
   @PutMapping("/{id}/{newStatus}")
+  @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<OrdenResponseDTO> changeStateOrder(@PathVariable Long id, @PathVariable String newStatus){
     StatusOrden status = StatusOrden.valueOf(newStatus.toUpperCase());
     ordenService.changeStateOrder(id, status);
