@@ -31,6 +31,7 @@ class RestaurantServiceTest {
     restaurantRepository = mock(RestaurantRepository.class);
     restaurantService = new RestaurantService(restaurantRepository);
     restaurant = new Restaurant();
+    restaurant.setId(1L);
     restaurant.setName("El sazon");
     restaurant.setAddress("centro");
     restaurant.setPhoneNumber("345678322");
@@ -96,4 +97,5 @@ class RestaurantServiceTest {
     verify(restaurantRepository).existsById(anyLong());
     verify(restaurantRepository, never()).deleteById(anyLong());
   }
+
 }

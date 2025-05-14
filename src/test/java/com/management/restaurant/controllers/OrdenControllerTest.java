@@ -15,6 +15,9 @@ import com.management.restaurant.services.observer.ObserverManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -137,24 +140,27 @@ class OrdenControllerTest {
   @Test
   @DisplayName("Traer todos los pedidos")
   void getAllOrdenes() {
+    List<OrdenResponseDTO> ordenResponseDTOList = createOrdenResponseDTOList();
+    Page<OrdenResponseDTO> pageResponse = new PageImpl<>(ordenResponseDTOList);
 
-    List<OrdenResponseDTO> ordenRequestDTOList = createOrdenResponseDTOList();
-    when(ordenService.getAllOrdenes()).thenReturn(ordenRequestDTOList);
+    when(ordenService.getAllOrdenes(any(Pageable.class))).thenReturn(pageResponse);
 
-      webTestClient.get()
-        .uri("/api/ordenes")
-        .exchange()
-        .expectStatus().isOk()
-        .expectHeader().contentType(MediaType.APPLICATION_JSON)
-        .expectBodyList(OrdenResponseDTO.class)
-        .value(response -> {
-           assertEquals(ordenRequestDTOList.size(), response.size());
-          for (int i = 0; i < ordenRequestDTOList.size(); i++) {
-            assertOrdenResponseDTO(ordenRequestDTOList.get(i), response.get(i));
-          }
-        });
-      verify(ordenService).getAllOrdenes();
+    webTestClient.get()
+      .uri("/api/ordenes")
+      .exchange()
+      .expectStatus().isOk()
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBodyList(OrdenResponseDTO.class)
+      .value(response -> {
+        assertEquals(ordenResponseDTOList.size(), response.size());
+        for (int i = 0; i < ordenResponseDTOList.size(); i++) {
+          assertOrdenResponseDTO(ordenResponseDTOList.get(i), response.get(i));
+        }
+      });
+
+    verify(ordenService).getAllOrdenes(any(Pageable.class));
   }
+
 
   @Test
   @DisplayName("Traer por id del pedido")

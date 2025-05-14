@@ -19,6 +19,8 @@ import com.management.restaurant.strategy.StatusDelivered;
 import com.management.restaurant.utils.ItemDtoConverter;
 import com.management.restaurant.utils.OrdenDtoConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -36,6 +38,7 @@ public class OrdenService {
   private final ClientService clientService;
   private final DishService dishService;
   private final Map<StatusOrden, IStatusOrdenStrategy> statusStrategy;
+  private static final double FRECUENT_CLIENT_DISCOUNT_PERCENT = 2.38;
 
 
   @Autowired
@@ -60,20 +63,18 @@ public class OrdenService {
       Client client = findClientById(ordenRequestDTO.getClientId());
       List<Item> items = validateAndConvertItems(ordenRequestDTO.getItems());
 
-      clientService.updateObserver(client);
-
       Orden orden = createAndSaveOrden(ordenRequestDTO, dateOrder, statusOrder, client, items);
-      clientService.notifyClientObservers(orden.getClient());
-
       adjustItemPrices(items);
 
       Double priceTotal = calculateTotalPrice(items);
       if (client.getIsFrecuent()) {
-        priceTotal = applyDiscount(priceTotal, 2.38);
+        priceTotal = applyDiscount(priceTotal, FRECUENT_CLIENT_DISCOUNT_PERCENT);
       }
 
       orden.setPriceTotal(priceTotal);
       ordenRepository.save(orden);
+      clientService.updateObserver(client);
+      clientService.notifyClientObservers(orden.getClient());
       return OrdenDtoConverter.convertToResponseDTO(orden);
     }catch (Exception e) {
       e.printStackTrace();
@@ -136,11 +137,10 @@ public class OrdenService {
     return priceTotal * ((100 - discountPercentage) / 100);
   }
 
-  public List<OrdenResponseDTO> getAllOrdenes() {
+  public Page<OrdenResponseDTO> getAllOrdenes(Pageable pageable) {
     try {
-      return ordenRepository.findAll().stream()
-        .map(OrdenDtoConverter::convertToResponseDTO)
-        .collect(Collectors.toList());
+      return ordenRepository.findAll(pageable)
+        .map(OrdenDtoConverter::convertToResponseDTO);
     } catch (Exception e) {
       throw new RuntimeException("Error al obtener todas las órdenes", e);
     }

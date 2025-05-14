@@ -5,6 +5,9 @@ import com.management.restaurant.DTO.ordens.OrdenResponseDTO;
 import com.management.restaurant.enums.StatusOrden;
 import com.management.restaurant.services.OrdenService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,8 +45,14 @@ public class OrdenController {
 
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
-  public List<OrdenResponseDTO> getAllOrdenes() {
-    return ordenService.getAllOrdenes();
+  public Page<OrdenResponseDTO> getAllOrdenes(
+    @RequestParam(required = false) Integer page,
+    @RequestParam(required = false) Integer size) {
+    int defaultPage = (page != null) ? page : 0;
+    int defaultSize = (size != null) ? size : 5;
+
+    Pageable pageable = PageRequest.of(defaultPage, defaultSize);
+    return ordenService.getAllOrdenes(pageable);
   }
 
   @GetMapping("/{id}")

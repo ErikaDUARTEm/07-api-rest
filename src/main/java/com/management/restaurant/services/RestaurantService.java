@@ -6,6 +6,8 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Optional;
 
 @Service
@@ -28,40 +30,42 @@ public class RestaurantService {
       return repository.findById(restaurantId).orElse(null);
     }
   }
-  public Restaurant updateRestaurant(Long id, Restaurant updateRestaurant){
-    Restaurant restaurantById = repository.findRestaurantById(id);
+  @Transactional
+  public Restaurant updateRestaurant(Long id, Restaurant updatedData) {
+    Restaurant restaurant = repository.findRestaurantById(id);
 
-    if (restaurantById == null) {
+    if (restaurant == null) {
       throw new EntityNotFoundException("Restaurante no encontrado con ID: " + id);
     }
-    updateName(updateRestaurant, restaurantById);
-    updateAddress(updateRestaurant, restaurantById);
-    updatePhoneNumber(updateRestaurant, restaurantById);
-    updateOpeningHours(updateRestaurant, restaurantById);
-    updateClosingHours(updateRestaurant, restaurantById);
+    updateName(updatedData, restaurant);
+    updateAddress(updatedData, restaurant);
+    updatePhoneNumber(updatedData, restaurant);
+    updateOpeningHours(updatedData, restaurant);
+    updateClosingHours(updatedData, restaurant);
 
-    return repository.save(restaurantById);
+    return repository.save(restaurant);
   }
 
-  private static void updateClosingHours(Restaurant updateRestaurant, Restaurant restaurantById) {
-    if (updateRestaurant.getClosingHours() != null) restaurantById.setClosingHours(updateRestaurant.getClosingHours());
+  private static void updateClosingHours(Restaurant updatedData, Restaurant restaurant) {
+    if (updatedData.getClosingHours() != null) restaurant.setClosingHours(updatedData.getClosingHours());
   }
 
-  private static void updateOpeningHours(Restaurant updateRestaurant, Restaurant restaurantById) {
-    if (updateRestaurant.getOpeningHours() != null) restaurantById.setOpeningHours(updateRestaurant.getOpeningHours());
+  private static void updateOpeningHours(Restaurant updatedData, Restaurant restaurant) {
+    if (updatedData.getOpeningHours() != null) restaurant.setOpeningHours(updatedData.getOpeningHours());
   }
 
-  private static void updatePhoneNumber(Restaurant updateRestaurant, Restaurant restaurantById) {
-    if (updateRestaurant.getPhoneNumber() != null) restaurantById.setPhoneNumber(updateRestaurant.getPhoneNumber());
+  private static void updatePhoneNumber(Restaurant updatedData, Restaurant restaurant) {
+    if (updatedData.getPhoneNumber() != null) restaurant.setPhoneNumber(updatedData.getPhoneNumber());
   }
 
-  private static void updateAddress(Restaurant updateRestaurant, Restaurant restaurantById) {
-    if (updateRestaurant.getAddress() != null) restaurantById.setAddress(updateRestaurant.getAddress());
+  private static void updateAddress(Restaurant updatedData, Restaurant restaurant) {
+    if (updatedData.getAddress() != null) restaurant.setAddress(updatedData.getAddress());
   }
 
-  private static void updateName(Restaurant updateRestaurant, Restaurant restaurantById) {
-    if (updateRestaurant.getName() != null) restaurantById.setName(updateRestaurant.getName());
+  private static void updateName(Restaurant updatedData, Restaurant restaurant) {
+    if (updatedData.getName() != null) restaurant.setName(updatedData.getName());
   }
+
 
   public void deleteRestaurant(Long id){
     if (!repository.existsById(id)) {
@@ -69,5 +73,4 @@ public class RestaurantService {
     }
     repository.deleteById(id);
   }
-
 }
