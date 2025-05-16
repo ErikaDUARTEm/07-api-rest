@@ -4,6 +4,7 @@ import com.management.restaurant.DTO.client.ClientResponseDTO;
 import com.management.restaurant.DTO.ordens.DishDTO;
 import com.management.restaurant.DTO.ordens.ItemRequestDTO;
 import com.management.restaurant.DTO.ordens.ItemResponseDTO;
+import com.management.restaurant.DTO.ordens.OrdenPageResponseDTO;
 import com.management.restaurant.DTO.ordens.OrdenRequestDTO;
 import com.management.restaurant.DTO.ordens.OrdenResponseDTO;
 import com.management.restaurant.DTO.restaurant.DishRequestDTO;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -136,31 +138,41 @@ class OrdenControllerTest {
 
     verify(ordenService).createOrden(any(OrdenRequestDTO.class));
   }
-
   @Test
   @DisplayName("Traer todos los pedidos")
   void getAllOrdenes() {
     List<OrdenResponseDTO> ordenResponseDTOList = createOrdenResponseDTOList();
-    Page<OrdenResponseDTO> pageResponse = new PageImpl<>(ordenResponseDTOList);
+    int pageNumber = 0;
+    int pageSize = 5;
+
+    Page<OrdenResponseDTO> pageResponse = new PageImpl<>(
+      ordenResponseDTOList,
+      PageRequest.of(pageNumber, pageSize),
+      ordenResponseDTOList.size()
+    );
 
     when(ordenService.getAllOrdenes(any(Pageable.class))).thenReturn(pageResponse);
 
     webTestClient.get()
-      .uri("/api/ordenes")
+      .uri("/api/ordenes?page=0&size=5")
       .exchange()
       .expectStatus().isOk()
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBodyList(OrdenResponseDTO.class)
+      .expectBody(OrdenPageResponseDTO.class)
       .value(response -> {
-        assertEquals(ordenResponseDTOList.size(), response.size());
+        assertEquals(ordenResponseDTOList.size(), response.content().size());
+        assertEquals(pageNumber, response.pageNumber());
+        assertEquals(pageSize, response.pageSize());
+        assertEquals(ordenResponseDTOList.size(), response.totalElements());
+        assertEquals(1, response.totalPages());
+
         for (int i = 0; i < ordenResponseDTOList.size(); i++) {
-          assertOrdenResponseDTO(ordenResponseDTOList.get(i), response.get(i));
+          assertOrdenResponseDTO(ordenResponseDTOList.get(i), response.content().get(i));
         }
       });
 
     verify(ordenService).getAllOrdenes(any(Pageable.class));
   }
-
 
   @Test
   @DisplayName("Traer por id del pedido")

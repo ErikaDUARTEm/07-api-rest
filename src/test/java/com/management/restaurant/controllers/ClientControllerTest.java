@@ -1,13 +1,18 @@
 package com.management.restaurant.controllers;
 
+import com.management.restaurant.DTO.client.ClientPageResponseDTO;
 import com.management.restaurant.DTO.client.ClientRequestDTO;
 import com.management.restaurant.DTO.client.ClientResponseDTO;
 import com.management.restaurant.models.client.Client;
 import com.management.restaurant.services.ClientService;
+import com.management.restaurant.utils.ClientDtoConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -21,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ClientControllerTest {
@@ -73,7 +79,7 @@ public class ClientControllerTest {
         assertEquals(cliente.getNumberPhone(), cliente1.getNumberPhone());
 
       });
-    Mockito.verify(clientService).addClient(any(Client.class));
+    verify(clientService).addClient(any(Client.class));
   }
 @Test
 @DisplayName("Mostrar cliente por id")
@@ -94,47 +100,46 @@ void showClientById() {
       assertEquals(existingClient.getNumberPhone(), response.getNumberPhone());
       assertFalse(response.getIsFrecuent());
     });
-  Mockito.verify(clientService).showClientById(existingClient.getId());
+  verify(clientService).showClientById(existingClient.getId());
 }
+  @Test
+  @DisplayName("Lista de clientes paginada")
+  void listClients() {
+    List<Client> clients = List.of(
+      new Client(1L, "Aaron", "aaron@gmail.com", "386629292", false),
+      new Client(2L, "Lila", "lila@gmail.com", "987654321", false),
+      new Client(3L, "Pedro", "pedro@gmail.com", "555666777", true)
+    );
 
-@Test
-@DisplayName("Lista de clientes")
-void listClients(){
-  List<Client> clients = List.of(
-    new Client(1L, "Aaron", "aaron@gmail.com", "386629292", false),
-    new Client(2L, "Lila", "lila@gmail.com", "987654321", false),
-    new Client(3L, "Pedro", "pedro@gmail.com", "555666777", true)
-  );
-  when(clientService.listClient()).thenReturn(clients);
+    List<ClientResponseDTO> clientDTOs = clients.stream()
+      .map(ClientDtoConverter::convertToResponseDTO)
+      .toList();
 
-  webTestClient.get()
-    .uri("/api/cliente")
-    .exchange()
-    .expectStatus().isOk()
-    .expectHeader().contentType(MediaType.APPLICATION_JSON)
-    .expectBodyList(ClientResponseDTO.class)
-    .hasSize(3)
-    .value(cl -> {
-      assertEquals(1L, cl.get(0).getId());
-      assertEquals("Aaron", cl.get(0).getName());
-      assertEquals("aaron@gmail.com", cl.get(0).getEmail());
-      assertEquals("386629292", cl.get(0).getNumberPhone());
-      assertFalse(cl.get(0).getIsFrecuent());
+    Page<ClientResponseDTO> page = new PageImpl<>(clientDTOs, PageRequest.of(0, 5), clientDTOs.size());
 
-      assertEquals(2L, cl.get(1).getId());
-      assertEquals("Lila", cl.get(1).getName());
-      assertEquals("lila@gmail.com", cl.get(1).getEmail());
-      assertEquals("987654321", cl.get(1).getNumberPhone());
-      assertFalse(cl.get(1).getIsFrecuent());
+    when(clientService.listClient(any(Pageable.class))).thenReturn(page);
 
-      assertEquals(3L, cl.get(2).getId());
-      assertEquals("Pedro", cl.get(2).getName());
-      assertEquals("pedro@gmail.com", cl.get(2).getEmail());
-      assertEquals("555666777", cl.get(2).getNumberPhone());
-      assertTrue(cl.get(2).getIsFrecuent());
-    });
-  Mockito.verify(clientService).listClient();
-}
+    webTestClient.get()
+      .uri("/api/cliente?page=0&size=5")
+      .exchange()
+      .expectStatus().isOk()
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(ClientPageResponseDTO.class)
+      .value(response -> {
+        assertEquals(3, response.content().size());
+        assertEquals(0, response.pageNumber());
+        assertEquals(5, response.pageSize());
+        assertEquals(3, response.totalElements());
+        assertEquals(1, response.totalPages());
+
+        assertEquals("Aaron", response.content().get(0).getName());
+        assertEquals("Lila", response.content().get(1).getName());
+        assertEquals("Pedro", response.content().get(2).getName());
+      });
+
+    verify(clientService).listClient(any(Pageable.class));
+  }
+
   @Test
   @DisplayName("Actualizar cliente por id")
   void updateClient(){
@@ -153,7 +158,7 @@ void listClients(){
         assertEquals(updatedClient.getNumberPhone(), response.getNumberPhone());
         assertTrue(updatedClient.getIsFrecuent());
       });
-    Mockito.verify(clientService).updateClient(eq(existingClient.getId()), any(Client.class));
+    verify(clientService).updateClient(eq(existingClient.getId()), any(Client.class));
   }
 
   @Test
@@ -168,6 +173,6 @@ void listClients(){
       .exchange()
       .expectStatus().isNoContent();
 
-    Mockito.verify(clientService).deleteClient(existingClient.getId());
+    verify(clientService).deleteClient(existingClient.getId());
   }
 }

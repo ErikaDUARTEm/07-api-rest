@@ -1,11 +1,15 @@
 package com.management.restaurant.controllers;
 
+import com.management.restaurant.DTO.client.ClientPageResponseDTO;
 import com.management.restaurant.DTO.client.ClientRequestDTO;
 import com.management.restaurant.DTO.client.ClientResponseDTO;
 import com.management.restaurant.models.client.Client;
 import com.management.restaurant.services.ClientService;
 import com.management.restaurant.utils.ClientDtoConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -16,11 +20,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/cliente")
@@ -42,12 +44,20 @@ public class ClientController {
   }
 
   @GetMapping
-  public List<ClientResponseDTO> listClient() {
-    List<Client> clients = service.listClient();
-    return clients.stream()
-      .map(ClientDtoConverter::convertToResponseDTO)
-      .collect(Collectors.toList());
+  public ClientPageResponseDTO listClient(@RequestParam(defaultValue = "0") int page,
+                                          @RequestParam(defaultValue = "5") int size) {
+    Pageable pageable = PageRequest.of(page, size);
+    Page<ClientResponseDTO> pageResult = service.listClient(pageable);
+
+    return new ClientPageResponseDTO(
+      pageResult.getContent(),
+      pageResult.getNumber(),
+      pageResult.getSize(),
+      pageResult.getTotalElements(),
+      pageResult.getTotalPages()
+    );
   }
+
 
   @GetMapping("/{id}")
   @ResponseStatus(HttpStatus.OK)

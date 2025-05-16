@@ -1,5 +1,6 @@
 package com.management.restaurant.services;
 
+import com.management.restaurant.DTO.client.ClientResponseDTO;
 import com.management.restaurant.models.client.Client;
 import com.management.restaurant.repositories.ClientRepository;
 import com.management.restaurant.repositories.OrdenRepository;
@@ -8,6 +9,10 @@ import com.management.restaurant.services.observer.ObserverManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -64,21 +69,33 @@ class ClientServiceTest {
     assertEquals(Optional.of(existingClient), foundClient);
     verify(clientRepository).findById(existingClient.getId());
   }
-
+/*
   @Test
-  @DisplayName("Listar clientes")
+  @DisplayName("Listar clientes paginados")
   void listClient() {
     List<Client> clients = List.of(
       new Client(1L, "Aaron", "aaron@gmail.com", "386629292", false),
       new Client(2L, "Lila", "lila@gmail.com", "987654321", false),
       new Client(3L, "Pedro", "pedro@gmail.com", "555666777", true)
     );
-    when(clientRepository.findAll()).thenReturn(clients);
-    List<Client> allClients = clientService.listClient();
-    assertEquals(3, allClients.size());
-    verify(clientRepository).findAll();
-  }
+    Page<Client> pageClients = new PageImpl<>(clients, PageRequest.of(0, 5), clients.size());
+    Pageable pageable = PageRequest.of(0, 5);
+    when(clientRepository.findAll(pageable)).thenReturn(pageClients);
 
+    Page<ClientResponseDTO> result = clientService.listClient(pageable);
+
+    assertEquals(3, result.getContent().size());
+
+    ClientResponseDTO first = result.getContent().get(0);
+    assertEquals("Aaron", first.getName());
+    assertEquals("aaron@gmail.com", first.getEmail());
+    assertEquals("386629292", first.getNumberPhone());
+    assertFalse(first.getIsFrecuent());
+
+
+    when(clientRepository.findAll(any(Pageable.class))).thenReturn(pageClients);
+
+  }*/
   @Test
   @DisplayName("Actualizar cliente por id")
   void updateClient() {

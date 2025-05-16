@@ -8,6 +8,7 @@ import com.management.restaurant.models.order.Item;
 import com.management.restaurant.models.order.Orden;
 import com.management.restaurant.models.restaurant.Dish;
 import com.management.restaurant.models.restaurant.MenuRestaurant;
+import com.management.restaurant.models.restaurant.Restaurant;
 import com.management.restaurant.repositories.ClientRepository;
 import com.management.restaurant.repositories.ItemRepository;
 import com.management.restaurant.repositories.OrdenRepository;
@@ -23,7 +24,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.awt.*;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -70,6 +73,8 @@ class OrdenServiceTest {
     private Client client;
     private Dish dish;
     private Item item;
+    private Restaurant restaurant;
+    private MenuRestaurant menu;
 
     @BeforeEach
     void setUp() {
@@ -78,24 +83,39 @@ class OrdenServiceTest {
       ordenRequestDTO.setClientId(1L);
       ordenRequestDTO.setItems(List.of(new ItemRequestDTO("Dish 1", 20.0, 2, 1L, 2L)));
 
-      client = new Client();
-      client.setId(1L);
-      client.setIsFrecuent(true);
-
       dish = new Dish();
+      dish.setId(1L);
       dish.setName("Dish 1");
       dish.setPrice(20.0);
       dish.setPopular(true);
+      List<Dish> dishes = new ArrayList<>();
+      dishes.add(dish);
+      MenuRestaurant menu = new MenuRestaurant();
+      menu.setIdMenu(2L);
+      menu.setDescription("Menu");
+      menu.setDishes(dishes);
+      Restaurant restaurant = new Restaurant();
+      restaurant.setId(1L);
+      restaurant.setName("La casa de mami");
+      restaurant.setAddress("La concordia");
+      restaurant.setOpeningHours(LocalTime.parse("11:00"));
+      restaurant.setClosingHours(LocalTime.parse("22:00"));
+      restaurant.setMenuRestaurant(menu);
+
+      client = new Client();
+      client.setId(1L);
+      client.setIsFrecuent(true);
 
       item = new Item();
       item.setName("Dish 1");
       item.setQuantity(2);
       item.setDish(dish);
       item.setPrice(dish.getPrice());
-      item.setRestaurantId(1L);
-      item.setMenuId(2L);
+      item.setRestaurantId(restaurant.getId());
+      item.setMenuId(menu.getIdMenu());
 
       orden = new Orden(1L, null, LocalDateTime.now(), StatusOrden.PENDING, client, Collections.singletonList(item));
+      when(iordenFactory.createOrden(any(),any(),any(),any(), any())).thenReturn(orden);
       ordenService = new OrdenService(ordenRepository, iordenFactory, clientRepository, clientService, dishService);
     }
 
@@ -121,12 +141,12 @@ class OrdenServiceTest {
 
       client = new Client();
       client.setId(1L);
-      client.setIsFrecuent(true);
+      client.setIsFrecuent(false);
 
       dish = new Dish();
       dish.setName("Dish 1");
       dish.setPrice(20.0);
-      dish.setPopular(true);
+      dish.setPopular(false);
 
       item = new Item();
       item.setName("Dish 1");
@@ -136,7 +156,7 @@ class OrdenServiceTest {
       item.setRestaurantId(1L);
       item.setMenuId(2L);
 
-      orden = new Orden(1L, null, LocalDateTime.now(), StatusOrden.PENDING, client, Collections.singletonList(item));
+      orden = new Orden(1L, 40.0, LocalDateTime.now(), StatusOrden.PENDING, client, Collections.singletonList(item));
 
 
       Page<Orden> ordenPage = new PageImpl<>(List.of(orden));
@@ -348,7 +368,7 @@ class OrdenServiceTest {
 
     client = new Client();
     client.setId(1L);
-    client.setIsFrecuent(true);
+    client.setIsFrecuent(false);
 
     dish = new Dish();
     dish.setName("Dish 1");
@@ -402,6 +422,7 @@ class OrdenServiceTest {
     verify(dishService, times(3)).findDishByNameAndRestaurantAndMenu(anyString(), anyLong(), anyLong());
     verify(ordenRepository, times(1)).save(orden);
 
+    assertEquals(expectedPriceTotal, response.getPriceTotal());
     assertEquals(orden.getItems().size(), items.size()); orden.getItems().forEach(item -> {
       assertTrue(item.getQuantity() > 0);
       assertNotNull(item.getPrice());
@@ -474,7 +495,6 @@ class OrdenServiceTest {
     StatusOrden orderStatus = invocation.getArgument(2);
     Client orderClient = invocation.getArgument(3);
     List<Item> orderItems = invocation.getArgument(4);
-    Double initialPriceTotal = invocation.getArgument(0);
 
       return new Orden(ordenId, 0.0, orderDate, orderStatus, orderClient, new ArrayList<>(orderItems));
     });
@@ -494,46 +514,38 @@ class OrdenServiceTest {
     verify(ordenRepository, times(1)).save(any(Orden.class));
     }
 
-/*
   @Test
   @DisplayName("Crear orden")
   void createOrden() {
-    Double priceBeforeDiscount = 20.0 * 2;
-    client = new Client();
-    client.setId(1L);
-    client.setIsFrecuent(true);
-    Orden orden = new Orden(1L, priceBeforeDiscount, LocalDateTime.now(), StatusOrden.PENDING, client, List.of(item));
 
-    when(clientRepository.findById(any(Long.class))).thenReturn(Optional.of(client));
-    when(dishService.findDishByNameAndRestaurantAndMenu(any(String.class), any(Long.class), any(Long.class))).thenReturn(dish);
-    when(iordenFactory.createOrden(eq(priceBeforeDiscount), any(LocalDateTime.class), any(StatusOrden.class), any(Client.class), anyList()))
-      .thenAnswer(invocation -> {
-        Double pTotal = invocation.getArgument(0);
-        LocalDateTime orderDate = invocation.getArgument(1);
-        StatusOrden orderStatus = invocation.getArgument(2);
-        Client orderClient = invocation.getArgument(3);
-        List<Item> orderItems = invocation.getArgument(4);
-        return new Orden(1L, pTotal, orderDate, orderStatus, orderClient, new ArrayList<>(orderItems));
-      });
+    double priceBeforeDiscount = 20.0 * 2;
+    double expectedPriceTotal = priceBeforeDiscount - (priceBeforeDiscount * 2.38 / 100);
+    orden.setPriceTotal(expectedPriceTotal);
+
+    when(clientRepository.findById(1L)).thenReturn(Optional.of(client));
+    when(dishService.findDishByNameAndRestaurantAndMenu("Dish 1", 1L, 2L)).thenReturn(dish);
+
+    when(ordenRepository.save(any(Orden.class))).thenReturn(orden);
+
     doNothing().when(clientService).updateObserver(any(Client.class));
     doNothing().when(clientService).notifyClientObservers(any(Client.class));
     doNothing().when(dishService).updateObserver(any(Dish.class));
+    ordenRequestDTO.setPriceTotal(priceBeforeDiscount);
 
-    when(ordenRepository.save(any(Orden.class))).thenReturn(orden);
     OrdenResponseDTO response = ordenService.createOrden(ordenRequestDTO);
+
     assertNotNull(response);
-    Double expectedPriceTotal = 40.0 - (40.0 * 2.38 / 100);
-    assertEquals(expectedPriceTotal, response.getPriceTotal());
+    assertEquals( expectedPriceTotal, response.getPriceTotal());
     assertEquals(2, response.getItems().get(0).getQuantity());
+    assertEquals("Dish 1", response.getItems().get(0).getName());
 
     verify(clientRepository, times(1)).findById(1L);
     verify(dishService, times(3)).findDishByNameAndRestaurantAndMenu("Dish 1", 1L, 2L);
-    verify(iordenFactory, times(1)).createOrden(eq( priceBeforeDiscount), any(LocalDateTime.class), any(StatusOrden.class), any(Client.class), anyList());
-    verify(clientService, times(1)).updateObserver(client);
-    verify(clientService, times(1)).notifyClientObservers(client);
-    verify(dishService, times(1)).updateObserver(dish);
-    verify(ordenRepository, times(1)).save(orden);
-  }*/
+    verify(iordenFactory, times(1)).createOrden(eq(priceBeforeDiscount), any(LocalDateTime.class), eq(StatusOrden.PENDING), any(client.getClass()), anyList());
+    verify(clientService, times(1)).updateObserver(any(Client.class));
+    verify(clientService, times(1)).notifyClientObservers(any(Client.class));
+  }
+
   @Test
   @DisplayName("Crear orden - Manejo de excepción")
   void createOrdenExceptionHandling() {

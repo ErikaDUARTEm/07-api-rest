@@ -1,5 +1,6 @@
 package com.management.restaurant.controllers;
 
+import com.management.restaurant.DTO.ordens.OrdenPageResponseDTO;
 import com.management.restaurant.DTO.ordens.OrdenRequestDTO;
 import com.management.restaurant.DTO.ordens.OrdenResponseDTO;
 import com.management.restaurant.enums.StatusOrden;
@@ -45,14 +46,20 @@ public class OrdenController {
 
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
-  public Page<OrdenResponseDTO> getAllOrdenes(
-    @RequestParam(required = false) Integer page,
-    @RequestParam(required = false) Integer size) {
-    int defaultPage = (page != null) ? page : 0;
-    int defaultSize = (size != null) ? size : 5;
+  public OrdenPageResponseDTO getAllOrdenes(
+    @RequestParam(defaultValue = "0") int page,
+    @RequestParam(defaultValue = "5") int size) {
 
-    Pageable pageable = PageRequest.of(defaultPage, defaultSize);
-    return ordenService.getAllOrdenes(pageable);
+    Pageable pageable = PageRequest.of(page, size);
+    Page<OrdenResponseDTO> pageResult = ordenService.getAllOrdenes(pageable);
+
+    return new OrdenPageResponseDTO(
+      pageResult.getContent(),
+      pageResult.getNumber(),
+      pageResult.getSize(),
+      pageResult.getTotalElements(),
+      pageResult.getTotalPages()
+    );
   }
 
   @GetMapping("/{id}")

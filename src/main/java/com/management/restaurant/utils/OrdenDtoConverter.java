@@ -16,14 +16,10 @@ public class OrdenDtoConverter {
       System.out.println("Orden es nulo");
       return null;
     }
-    double total = orden.getItems().stream()
-      .mapToDouble(item -> item.getPrice() * item.getQuantity())
-      .sum();
-
 
     OrdenResponseDTO ordenResponseDTO = new OrdenResponseDTO();
     ordenResponseDTO.setId(orden.getOrdenId());
-    ordenResponseDTO.setPriceTotal(total);
+    ordenResponseDTO.setPriceTotal(orden.getPriceTotal());
     ordenResponseDTO.setDateOrder(orden.getDateOrder());
     ordenResponseDTO.setStatusOrder(orden.getStatusOrder());
     ordenResponseDTO.setIsFrecuent(orden.getClient().getIsFrecuent());

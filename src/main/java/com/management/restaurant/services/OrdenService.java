@@ -1,6 +1,7 @@
 package com.management.restaurant.services;
 
 import com.management.restaurant.DTO.ordens.ItemRequestDTO;
+import com.management.restaurant.DTO.ordens.OrdenPageResponseDTO;
 import com.management.restaurant.DTO.ordens.OrdenRequestDTO;
 import com.management.restaurant.DTO.ordens.OrdenResponseDTO;
 import com.management.restaurant.enums.StatusOrden;
@@ -69,8 +70,8 @@ public class OrdenService {
       Double priceTotal = calculateTotalPrice(items);
       if (client.getIsFrecuent()) {
         priceTotal = applyDiscount(priceTotal, FRECUENT_CLIENT_DISCOUNT_PERCENT);
-      }
 
+      }
       orden.setPriceTotal(priceTotal);
       ordenRepository.save(orden);
       clientService.updateObserver(client);
