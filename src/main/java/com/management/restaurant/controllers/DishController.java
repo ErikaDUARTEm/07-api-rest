@@ -6,6 +6,7 @@ import com.management.restaurant.models.restaurant.Dish;
 import com.management.restaurant.services.DishService;
 import com.management.restaurant.utils.DishDtoConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -29,12 +31,14 @@ public class DishController {
     this.service = service;
   }
   @GetMapping
+  @ResponseStatus(HttpStatus.OK)
   public List<DishResponseDTO> getAllDishes() {
     return service.getAllDish().stream()
       .map(DishDtoConverter::convertToResponseDTO)
       .collect(Collectors.toList());
   }
   @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
   public ResponseEntity<DishResponseDTO> createDish(@RequestBody DishRequestDTO dishRequestDTO) {
     Dish dish = service.createDish(dishRequestDTO);
     DishResponseDTO response = DishDtoConverter.convertToResponseDTO(dish);
@@ -42,13 +46,15 @@ public class DishController {
   }
 
   @PutMapping("/{id}")
-  public DishResponseDTO updateDish(@PathVariable Long id, @RequestBody DishRequestDTO dishRequest) {
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<DishResponseDTO> updateDish(@PathVariable Long id, @RequestBody DishRequestDTO dishRequest) {
     Dish dish = service.updateDish(id, dishRequest);
-    return DishDtoConverter.convertToResponseDTO(dish);
+    DishResponseDTO response = DishDtoConverter.convertToResponseDTO(dish);
+    return ResponseEntity.ok(response);
   }
   @DeleteMapping("/{id}")
-  public ResponseEntity<String> deleteDish(@PathVariable Long id) {
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteDish(@PathVariable Long id) {
     service.deleteDish(id);
-    return ResponseEntity.ok("Plato eliminado exitosamente.");
   }
 }

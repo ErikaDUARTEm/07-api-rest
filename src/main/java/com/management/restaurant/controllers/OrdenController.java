@@ -1,11 +1,15 @@
 package com.management.restaurant.controllers;
 
-
+import com.management.restaurant.DTO.ordens.OrdenPageResponseDTO;
 import com.management.restaurant.DTO.ordens.OrdenRequestDTO;
 import com.management.restaurant.DTO.ordens.OrdenResponseDTO;
 import com.management.restaurant.enums.StatusOrden;
 import com.management.restaurant.services.OrdenService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,6 +19,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -30,32 +36,52 @@ public class OrdenController {
   public OrdenController(OrdenService ordenService) {
     this.ordenService = ordenService;
   }
+
   @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
   public ResponseEntity<OrdenResponseDTO> createOrden(@Validated @RequestBody OrdenRequestDTO ordenRequestDTO) {
     OrdenResponseDTO createdOrden = ordenService.createOrden(ordenRequestDTO);
-    return ResponseEntity.ok(createdOrden);
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdOrden);
   }
 
   @GetMapping
-  public List<OrdenResponseDTO> getAllOrdenes() {
-    return ordenService.getAllOrdenes();
+  @ResponseStatus(HttpStatus.OK)
+  public OrdenPageResponseDTO getAllOrdenes(
+    @RequestParam(defaultValue = "0") int page,
+    @RequestParam(defaultValue = "5") int size) {
+
+    Pageable pageable = PageRequest.of(page, size);
+    Page<OrdenResponseDTO> pageResult = ordenService.getAllOrdenes(pageable);
+
+    return new OrdenPageResponseDTO(
+      pageResult.getContent(),
+      pageResult.getNumber(),
+      pageResult.getSize(),
+      pageResult.getTotalElements(),
+      pageResult.getTotalPages()
+    );
   }
 
   @GetMapping("/{id}")
+  @ResponseStatus(HttpStatus.OK)
   public OrdenResponseDTO getOrdenById(@PathVariable Long id) {
     return ordenService.getOrdenById(id);
   }
 
   @PutMapping("/{id}")
+  @ResponseStatus(HttpStatus.OK)
   public OrdenResponseDTO updateOrden(@PathVariable Long id, @Validated @RequestBody OrdenRequestDTO ordenRequestDTO) {
     return ordenService.updateOrden(id, ordenRequestDTO);
   }
 
   @DeleteMapping("/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteOrden(@PathVariable Long id) {
     ordenService.deleteOrden(id);
   }
+
   @PutMapping("/{id}/{newStatus}")
+  @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<OrdenResponseDTO> changeStateOrder(@PathVariable Long id, @PathVariable String newStatus){
     StatusOrden status = StatusOrden.valueOf(newStatus.toUpperCase());
     ordenService.changeStateOrder(id, status);

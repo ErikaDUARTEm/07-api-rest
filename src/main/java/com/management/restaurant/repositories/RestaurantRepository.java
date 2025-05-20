@@ -13,4 +13,5 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
   @Query("SELECT r FROM Restaurant r JOIN FETCH r.menuRestaurant WHERE r.id = :restaurantId")
   Optional<Restaurant> findMenuByRestaurant(Long restaurantId);
 
+  Restaurant findRestaurantById(Long restaurantId);
 }

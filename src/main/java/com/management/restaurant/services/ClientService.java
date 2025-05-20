@@ -1,14 +1,18 @@
 package com.management.restaurant.services;
 
+import com.management.restaurant.DTO.client.ClientResponseDTO;
 import com.management.restaurant.models.client.Client;
 import com.management.restaurant.repositories.ClientRepository;
 import com.management.restaurant.repositories.OrdenRepository;
 import com.management.restaurant.services.interfaces.IObserver;
 import com.management.restaurant.services.observer.ObserverManager;
+import com.management.restaurant.utils.ClientDtoConverter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -40,9 +44,10 @@ public class ClientService implements IObserver<Client> {
   public Optional<Client> showClientById(Long id){
     return clientRepository.findById(id);
   }
-  public List<Client> listClient(){
-    assert clientRepository != null;
-    return clientRepository.findAll();
+
+  public Page<ClientResponseDTO> listClient(Pageable pageable) {
+      return clientRepository.findAll(pageable)
+        .map(ClientDtoConverter::convertToResponseDTO);
   }
 
   public Client updateClient(Long id, Client clientUpdated) {

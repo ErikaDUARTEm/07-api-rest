@@ -27,15 +27,16 @@ public class MenuController {
   @Autowired
   public MenuController(MenuService service) {
     this.service = service;
-
   }
   @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
   public MenuResponseDTO createMenu(@Validated @RequestBody MenuResquetDTO menuRequestDTO) {
     MenuRestaurant menu = service.addMenu(menuRequestDTO);
     return MenuDtoConverter.convertToResponseDTO(menu);
   }
 
   @PutMapping()
+  @ResponseStatus(HttpStatus.OK)
   public MenuResponseDTO updateMenu(@Validated @RequestBody MenuResquetDTO menuRequestDTO) {
     MenuRestaurant updatedMenu = service.updateMenu(menuRequestDTO);
     return MenuDtoConverter.convertToResponseDTO(updatedMenu);
