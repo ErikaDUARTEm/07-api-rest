@@ -2,6 +2,7 @@ package com.management.restaurant.controllers;
 
 
 import com.management.restaurant.DTO.ordens.DishDTO;
+import com.management.restaurant.DTO.restaurant.DishPageResponseDTO;
 import com.management.restaurant.DTO.restaurant.DishRequestDTO;
 import com.management.restaurant.DTO.restaurant.DishResponseDTO;
 import com.management.restaurant.models.restaurant.Dish;
@@ -10,6 +11,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -50,37 +55,53 @@ class DishControllerTest {
   }
 
   @Test
-  @DisplayName("obtener todos los platos")
-  void getAllDishes() {
+  @DisplayName("Obtener todos los platos paginados")
+  void getAllDishesPaged() {
+    Pageable pageable = PageRequest.of(0, 5);
 
-    List<Dish> dishList = List.of(
-      new Dish(1L, "Pasta", null, 12.99, false),
-      new Dish(2L, "Pizza", null, 15.99, true)
-    );
-    when(dishService.getAllDish()).thenReturn(dishList);
+    DishResponseDTO dish1 = new DishResponseDTO();
+    dish1.setId(1L);
+    dish1.setName("Pasta");
+    dish1.setPrice(12.99);
+    dish1.setPopular(false);
+
+    DishResponseDTO dish2 = new DishResponseDTO();
+    dish2.setId(2L);
+    dish2.setName("Pizza");
+    dish2.setPrice(15.99);
+    dish2.setPopular(true);
+
+    List<DishResponseDTO> dishList = List.of(dish1, dish2);
+    DishPageResponseDTO pageResponse = new DishPageResponseDTO(dishList, 0, 5, 2, 1); // ✅ Usa DishPageResponseDTO
+
+    when(dishService.getAllDish(pageable)).thenReturn(new PageImpl<>(dishList, pageable, dishList.size())); // ✅ Simula paginación
 
     webTestClient.get()
-      .uri("/api/dish")
+      .uri("/api/dish?page=0&size=5")
       .exchange()
       .expectStatus().isOk()
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBodyList(DishDTO.class)
-      .hasSize(2)
-      .value(dish -> {
-        assertEquals(1L, dish.get(0).getId());
-        assertEquals("Pasta", dish.get(0).getName());
-        assertEquals(12.99, dish.get(0).getPrice());
-        assertFalse(dish.get(0).getPopular());
+      .expectBody(DishPageResponseDTO.class)
+      .value(response -> {
+        assertEquals(2, response.content().size());
+        assertEquals(0, response.pageNumber());
+        assertEquals(5, response.pageSize());
+        assertEquals(2, response.totalElements());
+        assertEquals(1, response.totalPages());
 
-        assertEquals(2L, dish.get(1).getId());
-        assertEquals("Pizza", dish.get(1).getName());
-        assertEquals(15.99, dish.get(1).getPrice());
-        assertTrue(dish.get(1).getPopular());
+        assertEquals(1L, response.content().get(0).getId());
+        assertEquals("Pasta", response.content().get(0).getName());
+        assertEquals(12.99, response.content().get(0).getPrice());
+        assertFalse(response.content().get(0).getPopular());
 
+        assertEquals(2L, response.content().get(1).getId());
+        assertEquals("Pizza",response.content().get(1).getName());
+        assertEquals(15.99, response.content().get(1).getPrice());
+        assertTrue(response.content().get(1).getPopular());
       });
-    Mockito.verify(dishService).getAllDish();
-  }
 
+    Mockito.verify(dishService).getAllDish(pageable);
+  }
   @Test
   @DisplayName("Crear plato nuevo")
   void createDish() {

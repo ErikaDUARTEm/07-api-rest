@@ -1,6 +1,7 @@
 package com.management.restaurant.services;
 
 import com.management.restaurant.DTO.restaurant.DishRequestDTO;
+import com.management.restaurant.DTO.restaurant.DishResponseDTO;
 import com.management.restaurant.models.restaurant.Dish;
 import com.management.restaurant.models.restaurant.MenuRestaurant;
 import com.management.restaurant.repositories.DishRepository;
@@ -8,10 +9,12 @@ import com.management.restaurant.repositories.ItemRepository;
 import com.management.restaurant.repositories.MenuRepository;
 import com.management.restaurant.services.interfaces.IObserver;
 import com.management.restaurant.services.observer.ObserverManager;
+import com.management.restaurant.utils.DishDtoConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 @Service
 public class DishService implements IObserver<Dish> {
@@ -28,10 +31,11 @@ public class DishService implements IObserver<Dish> {
     this.itemRepository = itemRepository;
     addDishObserver();
   }
-  public List<Dish> getAllDish(){
-      return repository.findAllDishes();
-  }
+  public Page<DishResponseDTO> getAllDish(Pageable pageable) {
+    Page<Dish> dishes = repository.findAllDishes(pageable);
 
+    return dishes.map(DishDtoConverter::convertToResponseDTO);
+  }
   public Dish createDish(DishRequestDTO dishRequestDTO) {
     Dish newDish = new Dish();
     newDish.setName(dishRequestDTO.getName());
