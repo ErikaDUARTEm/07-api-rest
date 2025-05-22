@@ -3,6 +3,7 @@ package com.management.restaurant.services;
 
 import com.management.restaurant.DTO.ordens.DishDTO;
 import com.management.restaurant.DTO.restaurant.DishRequestDTO;
+import com.management.restaurant.DTO.restaurant.DishResponseDTO;
 import com.management.restaurant.models.client.Client;
 import com.management.restaurant.models.restaurant.Dish;
 import com.management.restaurant.models.restaurant.MenuRestaurant;
@@ -14,6 +15,10 @@ import com.management.restaurant.services.observer.ObserverManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -66,13 +71,18 @@ class DishServiceTest {
   }
 
   @Test
-  @DisplayName("buscar todos los platos")
-  void getAllDish() {
+  @DisplayName("Buscar todos los platos paginados")
+  void getAllDishPaged() {
+    Pageable pageable = PageRequest.of(0, 5); // ✅ Define la paginación
     List<Dish> dishes = List.of(existingDish);
-    when(dishRepository.findAllDishes()).thenReturn(dishes);
-    List<Dish> result = dishService.getAllDish();
-    assertEquals(1, result.size());
-    verify(dishRepository, times(1)).findAllDishes();
+    Page<Dish> pageDishes = new PageImpl<>(dishes, pageable, dishes.size());
+
+    when(dishRepository.findAllDishes(pageable)).thenReturn(pageDishes);
+
+    Page<DishResponseDTO> result = dishService.getAllDish(pageable);
+
+    assertEquals(1, result.getContent().size());
+    verify(dishRepository, times(1)).findAllDishes(pageable);
   }
 
   @Test
