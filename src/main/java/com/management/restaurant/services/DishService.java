@@ -2,6 +2,7 @@ package com.management.restaurant.services;
 
 import com.management.restaurant.DTO.restaurant.DishRequestDTO;
 import com.management.restaurant.DTO.restaurant.DishResponseDTO;
+import com.management.restaurant.exceptions.DishAlreadyExistsException;
 import com.management.restaurant.models.restaurant.Dish;
 import com.management.restaurant.models.restaurant.MenuRestaurant;
 import com.management.restaurant.repositories.DishRepository;
@@ -37,12 +38,19 @@ public class DishService implements IObserver<Dish> {
     return dishes.map(DishDtoConverter::convertToResponseDTO);
   }
   public Dish createDish(DishRequestDTO dishRequestDTO) {
+    boolean exists = repository.existsByNameAndMenuRestaurantIdMenu(
+      dishRequestDTO.getName(),
+      dishRequestDTO.getMenuRestaurantId()
+    );
+    if (exists) {
+      throw new DishAlreadyExistsException("Ya existe un plato con ese nombre en este menú; no puedes agregar platos repetidos.");
+    }
     Dish newDish = new Dish();
     newDish.setName(dishRequestDTO.getName());
     newDish.setPrice(dishRequestDTO.getPrice());
     newDish.setPopular(dishRequestDTO.getPopular() != null ? dishRequestDTO.getPopular() : false);
     MenuRestaurant menuRestaurant = menuRepository.findById(dishRequestDTO.getMenuRestaurantId())
-      .orElseThrow(() -> new RuntimeException("MenuRestaurant not found"));
+      .orElseThrow(() -> new RuntimeException("Menu de Restaurant no encontrado"));
 
     newDish.setMenuRestaurant(menuRestaurant);
     return repository.save(newDish);
